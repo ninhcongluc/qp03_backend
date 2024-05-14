@@ -1,0 +1,47 @@
+{
+  "name": "qp03_backend",
+  "version": "1.0.0",
+  "description": "Quiz Practice Management",
+  "main": "app.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ninhcongluc/qp03_backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ninhcongluc/qp03_backend/issues"
+  },
+  "homepage": "https://github.com/ninhcongluc/qp03_backend#readme",
+  "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/morgan": "^1.9.3",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.9.0",
+    "body-parser": "^1.20.0",
+    "chai": "^4.3.6",
+    "chai-http": "^4.3.0",
+    "eslint": "^8.6.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.1.5",
+    "mocha": "^10.0.0",
+    "nodemon": "^3.1.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.4.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.11.5",
+    "typeorm": "^0.3.20",
+    "typescript": "^5.4.5"
+  }
+}
