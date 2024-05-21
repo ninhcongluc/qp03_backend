@@ -3,7 +3,6 @@ import 'dotenv/config';
 import AppDataSource from './src/configs/connect-db';
 
 const app = express();
-const port = 3000;
 
 const serverPort = process.env.PORT || 8000;
 
@@ -16,9 +15,10 @@ AppDataSource.initialize()
   });
 
 app.get('/', (req, res) => {
+  console.log('Welcome!');
   res.send('Welcome!');
 });
 
-app.listen(port, () => {
+app.listen(process.env.PORT, () => {
   console.log(`App is running on port http://localhost:${serverPort}`);
 });
