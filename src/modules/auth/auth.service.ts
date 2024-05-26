@@ -10,8 +10,8 @@ export class AuthService {
   }
 
   async signIn(userInput) {
-    const { email, password } = userInput;
-    const user = await this.userRepository.findOne({ where: { email } });
+    const { username, password } = userInput;
+    const user = await this.userRepository.findOne({ where: { username } });
     if (!user) throw new Error('User not found');
     const isPasswordMatch = bcrypt.compareSync(password, user.password);
     if (!isPasswordMatch) throw new Error('Password is incorrect');
