@@ -1,14 +1,11 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
-import { DBIndexes } from '../../commons/consts/db.const';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Index(DBIndexes.IDX_ROLE_NAME, ['name'], {
-  unique: true
-})
+
 @Entity('role')
 export class Role {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id?: string;
 
-  @Column()
-  name: string;
+  @Column({ nullable: true, unique: true})
+  username?: string;
 }
