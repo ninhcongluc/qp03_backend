@@ -8,7 +8,7 @@ export class User {
   @Column({ nullable: true, unique: true })
   username?: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   password?: string;
 
   @Column({ type: 'varchar', nullable: true })

@@ -1,14 +1,20 @@
 import { Router, Request, Response } from 'express';
+import { authentication, authorization } from '../auth/auth.middleware';
+import { UserService } from './user.service';
+import AppDataSource from '../../configs/connect-db';
+import { UserController } from './user.controller';
 
 const userRouter = Router();
+const userService = new UserService(AppDataSource);
+const userController = new UserController(userService);
 
-// Users routes
-userRouter.get('/', (req: Request, res: Response) => {
-  res.send('Users route!');
+// Manager routes
+userRouter.post('/manager/create', authentication, authorization(['admin']), (req: Request, res: Response) => {
+  res.send('Manager account created!');
 });
 
-userRouter.get('/:id', (req: Request, res: Response) => {
-  res.send(`User ${req.params.id} route!`);
+userRouter.get('/manager/list', authentication, authorization(['admin']), (req: Request, res: Response) => {
+  return userController.listManagerAccount(req, res);
 });
 
 export default userRouter;

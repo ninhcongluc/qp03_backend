@@ -31,9 +31,13 @@ const authentication = async (req: AuthenticatedRequest, res: Response, next: Ne
 
     next();
   } catch (error) {
-    res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ code: StatusCodes.UNAUTHORIZED, message: 'Invalid token', error: error.message });
+    if (!res.headersSent) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        code: StatusCodes.UNAUTHORIZED,
+        message: 'Invalid token',
+        error: error.message
+      });
+    }
   }
 };
 

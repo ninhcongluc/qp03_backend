@@ -8,6 +8,6 @@ const router = Router();
 // Mount the routers
 router.use('/auth', authRouter);
 
-router.use('/users', userRouter);
+router.use('/', userRouter);
 
 export default router;
