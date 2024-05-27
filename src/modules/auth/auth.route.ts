@@ -9,12 +9,13 @@ const authController = new AuthController(authService);
 
 const router = Router();
 
-router.post('/signIn', schemaValidator('/auth/signIn'), (req: Request, res: Response) => {
+router.post('/login', schemaValidator('/auth/signIn'), (req: Request, res: Response) => {
   return authController.signIn(req, res);
 });
 
-router.post('/signUp', schemaValidator('/auth/signUp'), (req: Request, res: Response) => {
-  return authController.signUp(req, res);
+//using only for Admin
+router.post('/register-admin', (req: Request, res: Response) => {
+  return authController.signUpAdmin(req, res);
 });
 
 export default router;

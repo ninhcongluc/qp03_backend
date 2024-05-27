@@ -5,7 +5,7 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   username?: string;
 
   @Column({ nullable: true })
@@ -53,8 +53,8 @@ export class User {
   })
   updatedAt?: Date;
 
-  @Column({ nullable: true })
-  roleId?: number;
+  @Column({ nullable: false })
+  roleId: number;
 
   @ManyToOne(() => Role, { onDelete: 'NO ACTION' })
   role?: Role;
