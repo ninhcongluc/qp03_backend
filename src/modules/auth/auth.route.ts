@@ -14,6 +14,9 @@ router.post('/login', schemaValidator('/auth/signIn'), (req: Request, res: Respo
   return authController.signIn(req, res);
 });
 
+router.get('/login/failed', (req, res) => {
+  res.status(401).send({ message: 'Login failed' });
+});
 //using only for Admin
 router.post('/register-admin', (req: Request, res: Response) => {
   return authController.signUpAdmin(req, res);
@@ -21,8 +24,15 @@ router.post('/register-admin', (req: Request, res: Response) => {
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
-  return authController.googleSignIn(req, res);
-});
+router.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    successRedirect: `${process.env.CLIENT_URL}/manager`,
+    failureRedirect: '/login/failed'
+  })
+);
 
+router.get('/logout', (req, res) => {
+  res.redirect(process.env.CLIENT_URL);
+});
 export default router;
