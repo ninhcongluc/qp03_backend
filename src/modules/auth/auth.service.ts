@@ -17,11 +17,12 @@ export class AuthService {
       .leftJoinAndSelect('user.role', 'role')
       .where('user.username = :username', { username })
       .getOne();
+
     if (!user) throw new Error('User not found');
-    const isPasswordMatch = bcrypt.compareSync(password, user.password);
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) throw new Error('Password is incorrect');
 
-    const accessToken = jwt.sign(
+    const accessToken = await jwt.sign(
       {
         id: user.id,
         role: user?.role.name,
@@ -33,6 +34,7 @@ export class AuthService {
         expiresIn: '2h'
       }
     );
+
     return { userInfo: user, token: accessToken };
   }
 

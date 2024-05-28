@@ -5,6 +5,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   async signIn(req, res) {
     try {
+      console.log(req.body);
       const user = await this.authService.signIn(req.body);
 
       return res.status(200).send({ data: user, status: StatusCodes.OK });
