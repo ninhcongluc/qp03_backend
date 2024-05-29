@@ -3,26 +3,21 @@ import 'dotenv/config';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import passport from 'passport';
 import AppDataSource from './src/configs/connect-db';
 import router from './src';
-import cookieSession from 'cookie-session';
+import session from 'express-session'; // <-- Changed this line
 const passportSetUp = require('./passport');
 
 const app = express();
 
+const serverPort = process.env.PORT || 8000;
 app.use(
-  cookieSession({
-    name: 'session',
-    keys: ['cyberwolve'],
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  session({
+    secret: 'cyberwolve',
+    resave: false,
+    saveUninitialized: false
   })
 );
-
-const serverPort = process.env.PORT || 8000;
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 app.use(
   cors({
