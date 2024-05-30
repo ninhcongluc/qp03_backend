@@ -9,11 +9,11 @@ export class UserService {
     this.userRepository = this.dataSource.getRepository(User);
   }
 
-  async listManagerAccount(req, res) {
+  async listAccountByRole(roleId: number) {
     try {
-      return await this.userRepository.find({ where: { roleId: AppObject.ROLE_CODE.MANAGER } });
+      return await this.userRepository.find({ where: { roleId } });
     } catch (error) {
-      return res.status(400).send({ error: error.message });
+      return error;
     }
   }
 }

@@ -17,4 +17,12 @@ userRouter.get('/manager/list', authentication, authorization(['admin']), (req: 
   return userController.listManagerAccount(req, res);
 });
 
+userRouter.get('/teacher/list', authentication, (req: Request, res: Response) => {
+  return userController.listTeacherAccount(req, res);
+});
+
+userRouter.get('/student/list', authentication, (req: Request, res: Response) => {
+  return userController.listStudentAccount(req, res);
+});
+
 export default userRouter;

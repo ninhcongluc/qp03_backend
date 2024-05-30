@@ -11,11 +11,11 @@ export class AuthService {
   }
 
   async signIn(userInput) {
-    const { username, password } = userInput;
+    const { email, password } = userInput;
     const user = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
-      .where('user.username = :username', { username })
+      .where('user.email = :email', { email })
       .getOne();
 
     if (!user) throw new Error('User not found');
@@ -38,18 +38,21 @@ export class AuthService {
     return { userInfo: user, token: accessToken };
   }
 
-  async signUpAdmin() {
-    const userExist = await this.userRepository.findOne({ where: { username: 'administrator' } });
+  async signUpAccount(body) {
+    const { email, password, gender, roleId } = body;
     const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
-    const hashPassword = bcrypt.hashSync('123@123aZ', salt);
-    if (userExist) throw new Error('User already exists');
+    const hashPassword = bcrypt.hashSync(password, salt);
     const user = await this.userRepository.save({
-      username: 'administrator',
       password: hashPassword,
-      email: 'lucnche140648@fpt.edu.vn',
-      gender: 1,
-      roleId: 1
+      email,
+      gender,
+      roleId
     });
     return user;
   }
+
+  findByConditions = async condition => {
+    console.log('condition', condition);
+    return this.userRepository.findOne({ where: condition });
+  };
 }

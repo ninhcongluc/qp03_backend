@@ -10,7 +10,7 @@ const authSignUp = Joi.object().keys({
 });
 
 const authSignIn = Joi.object().keys({
-  username: Joi.string().min(6).required(),
+  email: Joi.string().email().min(6).required(),
   password: Joi.string().required()
 });
 
