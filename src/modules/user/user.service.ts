@@ -16,4 +16,12 @@ export class UserService {
       return error;
     }
   }
+
+  async getUserProfile(userId: string) {
+    try {
+      return await this.userRepository.findOne({ where: { id: userId } });
+    } catch (error) {
+      return error;
+    }
+  }
 }
