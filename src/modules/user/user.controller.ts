@@ -30,4 +30,15 @@ export class UserController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
+  async getUserProfile(req, res) {
+    try {
+      console.log('data', req.user);
+      const userId = req.user._id;
+      const users = await this.userService.getUserProfile(userId);
+      return res.status(200).send({ data: users, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
 }
