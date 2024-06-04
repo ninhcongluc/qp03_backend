@@ -25,4 +25,9 @@ userRouter.get('/student/list', authentication, (req: Request, res: Response) =>
   return userController.listStudentAccount(req, res);
 });
 
+//Profile
+userRouter.get('/user/profile', authentication, (req: Request, res: Response) => {
+  return userController.getUserProfile(req, res);
+});
+
 export default userRouter;
