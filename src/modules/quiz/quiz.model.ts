@@ -1,32 +1,33 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Class } from '../class/class.model';
 
 @Entity('quiz')
 export class Quiz {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  id: string;
 
   @Column({ type: 'uuid' })
-  courseId: string;
+  classId: string;
 
   @Column()
   name: string;
 
   @Column({ nullable: true })
-  description: string | null;
+  description: string;
 
-  @Column({ type: 'timestamp', default: new Date() })
+  @Column({ type: 'timestamp', nullable: false })
   startDate: Date;
 
-  @Column({ type: 'timestamp', default: new Date() })
+  @Column({ type: 'timestamp', nullable: false })
   endDate: Date;
 
-  @Column({ type: 'number' })
+  @Column({ type: 'integer', default: 10 })
+  score: number;
+
+  @Column({ type: 'integer', nullable: false })
   timeLimitMinutes: number;
 
-  @Column({ type: 'number' })
-  maxParticipants: number;
-
-  @Column({ nullable: true })
+  @Column({ type: 'boolean', default: false })
   isHidden?: boolean;
 
   @Column({ type: 'timestamp', default: new Date() })
@@ -34,4 +35,7 @@ export class Quiz {
 
   @Column({ type: 'timestamp', default: new Date() })
   updatedAt: Date;
+
+  @ManyToOne(() => Class)
+  class: Class;
 }

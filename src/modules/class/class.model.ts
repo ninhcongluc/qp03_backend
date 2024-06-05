@@ -1,17 +1,17 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
 import { User } from '../user/user.model';
-import { Semester } from '../semester/semester.model';
+import { Course } from '../course/course.model';
 
-@Entity('course')
-export class Course {
+@Entity('class')
+export class Class {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  id: string;
 
   @Column({ type: 'uuid' })
-  managerId: string;
+  courseId: string;
 
   @Column({ type: 'uuid' })
-  semesterId: string;
+  teacherId: string;
 
   @Column({ nullable: false })
   code: string;
@@ -22,7 +22,22 @@ export class Course {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ default: false })
+  @Column({
+    type: 'timestamp',
+    nullable: false
+  })
+  startDate: Date;
+
+  @Column({
+    type: 'timestamp',
+    nullable: false
+  })
+  endDate: Date;
+
+  @Column({ type: 'integer', default: 50 })
+  maxParticipants: number;
+
+  @Column({ type: 'boolean', default: false })
   isActive: boolean;
 
   @Column({ type: 'timestamp', default: new Date() })
@@ -31,9 +46,9 @@ export class Course {
   @Column({ type: 'date', default: new Date() })
   updatedAt: Date;
 
-  @ManyToOne(() => User)
-  manager: User;
+  @ManyToOne(() => Course)
+  course: Course;
 
-  @ManyToOne(() => Semester)
-  semester: Semester;
+  @ManyToOne(() => User)
+  teacher: User;
 }
