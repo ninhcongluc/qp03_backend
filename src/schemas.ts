@@ -14,7 +14,28 @@ const authSignIn = Joi.object().keys({
   password: Joi.string().required()
 });
 
+const createManager = Joi.object().keys({
+  email: Joi.string().email().min(6).required(),
+  code: Joi.string().required(),
+  firstName: Joi.string().optional(),
+  lastName: Joi.string().optional(),
+  gender: Joi.number().optional(),
+  phoneNumber: Joi.string().optional(),
+  dateOfBirth: Joi.date().optional()
+});
+const updateManager = Joi.object().keys({
+  email: Joi.string().email().min(6).optional(),
+  code: Joi.string().optional(),
+  firstName: Joi.string().optional(),
+  lastName: Joi.string().optional(),
+  gender: Joi.number().optional(),
+  phoneNumber: Joi.string().optional(),
+  dateOfBirth: Joi.date().optional()
+});
+
 export default {
   '/auth/signIn': authSignIn,
-  '/auth/signUp': authSignUp
+  '/auth/signUp': authSignUp,
+  '/manager/create': createManager,
+  '/manager/update': updateManager
 } as { [key: string]: ObjectSchema };

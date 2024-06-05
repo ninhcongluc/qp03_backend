@@ -5,6 +5,9 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
+  @Column({ nullable: true, unique: true })
+  code?: string;
+
   @Column({ nullable: true })
   password?: string;
 
@@ -14,7 +17,7 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   lastName?: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true})
   email?: string;
 
   @Column({ type: 'smallint', nullable: true })
