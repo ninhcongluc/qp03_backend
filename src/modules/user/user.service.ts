@@ -1,6 +1,8 @@
 import { DataSource, Repository } from 'typeorm';
 import { User } from '../user/user.model';
 import { AppObject } from '../../commons/consts/app.objects';
+import * as bcrypt from 'bcrypt';
+
 const EmailService = require('../../configs/send-mail');
 const emailService = new EmailService();
 
@@ -20,28 +22,29 @@ export class UserService {
         throw new Error('Email already exists');
       }
       const generatedPassword = this.generateRandomPassword();
+      const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
+      const hashPassword = bcrypt.hashSync(generatedPassword, salt);
+
       console.log('generatedPassword', generatedPassword);
 
       const newUser = this.userRepository.create({
         ...data,
-        password: generatedPassword,
+        password: hashPassword,
         roleId: AppObject.ROLE_CODE.MANAGER,
         isActive: true
       });
 
-      
       //SEND MAIL HERE
       const mailOptions = {
         from: 'hongndhs171344@fpt.edu.vn',
         to: email,
         subject: 'Your account has been created',
-        text: `Your account has been created with password: ${generatedPassword}`,
+        text: `Your account has been created with password: ${generatedPassword}`
       };
       await emailService.sendEmail(mailOptions);
       console.log('Welcome email sent to', email);
-      
-      return await this.userRepository.save(newUser);
 
+      return await this.userRepository.save(newUser);
     } catch (error) {
       throw new Error(error);
     }
