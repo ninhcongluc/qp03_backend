@@ -9,19 +9,19 @@ const courseService = new CourseService(AppDataSource);
 const courseController = new CourseController(courseService);
 
 courseRouter.post(
-  "/manager/create",
+  "/course/create",
   authentication,
   authorization(["manager"]),
-  schemaValidator("/create"),
+  schemaValidator("/course/create"),
   (req: Request, res: Response) => {
     return courseController.createCourse(req, res);
   }
 );
 
-courseRouter.get("/list", authentication, authorization(["manager, teacher, student"]), (req: Request, res: Response) => {
+courseRouter.get("/course", authentication, authorization(["manager, teacher, student"]), (req: Request, res: Response) => {
   return courseController.listCourse(req, res);
 });
 
-courseRouter.get("/:id", authentication, authorization(["manager, teacher, student"]), (req: Request, res: Response) => {
+courseRouter.get("/course/:id", authentication, authorization(["manager, teacher, student"]), (req: Request, res: Response) => {
   return courseController.getDetailCourse(req, res);
 });

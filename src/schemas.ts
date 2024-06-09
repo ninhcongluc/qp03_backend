@@ -38,6 +38,23 @@ const createSemester = Joi.object().keys({
   endDate: Joi.date().required()
 });
 
+const createCourse = Joi.object().keys({
+  semesterId: Joi.string().required(),
+  code: Joi.string().required(),
+  name: Joi.string().required(),
+  description: Joi.string().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+const updateCourse = Joi.object().keys({
+  semesterId: Joi.string().optional(),
+  code: Joi.string().optional(),
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+
 
 export default {
   '/auth/signIn': authSignIn,
@@ -45,4 +62,5 @@ export default {
   '/manager/create': createManager,
   '/manager/update': updateManager,
   '/semester/create': createSemester,
+  '/course/create': createCourse,
 } as { [key: string]: ObjectSchema };
