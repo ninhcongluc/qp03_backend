@@ -32,10 +32,17 @@ const updateManager = Joi.object().keys({
   phoneNumber: Joi.string().optional(),
   dateOfBirth: Joi.date().optional()
 });
+const createSemester = Joi.object().keys({
+  name: Joi.string().required(),
+  startDate: Joi.date().required(),
+  endDate: Joi.date().required()
+});
+
 
 export default {
   '/auth/signIn': authSignIn,
   '/auth/signUp': authSignUp,
   '/manager/create': createManager,
-  '/manager/update': updateManager
+  '/manager/update': updateManager,
+  '/semester/create': createSemester,
 } as { [key: string]: ObjectSchema };
