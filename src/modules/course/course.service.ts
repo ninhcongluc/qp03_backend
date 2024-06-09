@@ -11,10 +11,18 @@ export class CourseService {
 
   async createCourse(data) {
     try {
-      const newCourse = this.courseRepository.create({
-        ...data,
-        status: AppObject.STATUS_CODE.ACTIVE,
-      });
+      // validate khong duoc tao trung course trong 1 ky 
+      const course = await this.courseRepository.findOne({
+        where: {
+          code: data.code,
+          semesterId: data.semesterId
+        }
+      })
+
+      if(course) {
+        throw new Error("You can not create duplicate course in a semester")
+      }
+      const newCourse = this.courseRepository.create(data);
       return await this.courseRepository.save(newCourse);
     } catch (error) {
       throw new Error(error);
@@ -23,6 +31,8 @@ export class CourseService {
 
   async listCourse() {
     try {
+      // tim hieu filter semesterId
+      // pagging 
       return await this.courseRepository.find();
     } catch (error) {
       return error;

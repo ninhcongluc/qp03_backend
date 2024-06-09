@@ -20,7 +20,6 @@ semesterRouter.post(
 semesterRouter.get(
   "/semester",
   authentication,
-  authorization(["manger, teacher, student"]),
     (req: Request, res: Response) => {
         return semesterController.listSemester(req, res);
     }
@@ -34,3 +33,5 @@ semesterRouter.delete(
         return semesterController.deleteSemester(req, res);
     }
 );
+
+export default semesterRouter;
