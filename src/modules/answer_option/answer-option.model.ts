@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
 
 @Entity('answer_option')
-export class Course {
+export class AnswerOption {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
