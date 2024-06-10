@@ -19,8 +19,9 @@ export class AuthService {
       .getOne();
 
     if (!user) throw new Error('User not found');
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatch) throw new Error('Password is incorrect');
+    //const isPasswordMatch = await bcrypt.compare(password, user.password);
+    //if (!isPasswordMatch) throw new Error('Password is incorrect');
+    if (password !== user.password) throw new Error('Password is incorrect');
 
     const accessToken = await jwt.sign(
       {
