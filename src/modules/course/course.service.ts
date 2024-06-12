@@ -2,6 +2,7 @@ import { DataSource, Repository } from "typeorm";
 import { Course } from "./course.model";
 import { AppObject } from "../../commons/consts/app.objects";
 
+
 export class CourseService {
   private courseRepository: Repository<Course>;
 
@@ -9,35 +10,42 @@ export class CourseService {
     this.courseRepository = this.dataSource.getRepository(Course);
   }
 
+  // create Course and not same course in a semester
   async createCourse(data) {
     try {
-      // validate khong duoc tao trung course trong 1 ky 
-      const course = await this.courseRepository.findOne({
+
+      const existingCourse = await this.courseRepository.findOne({
         where: {
           code: data.code,
           semesterId: data.semesterId
         }
-      })
+      });
 
-      if(course) {
-        throw new Error("You can not create duplicate course in a semester")
+      if (existingCourse) {
+        throw new Error("You can't create the same course in a semester")
       }
+
+      // create new course 
       const newCourse = this.courseRepository.create(data);
       return await this.courseRepository.save(newCourse);
     } catch (error) {
-      throw new Error(error);
+      // catch the bug to save trace stack
+      throw new Error(error.message || "Fail when create the Course");
     }
   }
 
-  async listCourse() {
+  // finding about filter semesterId
+  // pagging 
+
+  // listCourse
+  async listCourseByRole(roleId: number) {
     try {
-      // tim hieu filter semesterId
-      // pagging 
-      return await this.courseRepository.find();
+      return await this.courseRepository.find({ where: {} });
     } catch (error) {
       return error;
     }
   }
+
 
   async getDetailCourse(courseId: string) {
     try {
@@ -47,6 +55,8 @@ export class CourseService {
     }
   }
 
+
+  // update Course
   async updateCourse(courseId: string, data) {
     try {
       const course = await this.courseRepository.findOne({ where: { id: courseId } });

@@ -54,6 +54,13 @@ const updateCourse = Joi.object().keys({
   isActive: Joi.boolean().optional(),
 });
 
+const deleteCourse = Joi.object().keys({
+  semesterId: Joi.string().optional(),
+  code: Joi.string().optional(),
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  isActive: Joi.boolean().optional(),
+});
 
 
 export default {
@@ -63,4 +70,6 @@ export default {
   '/manager/update': updateManager,
   '/semester/create': createSemester,
   '/course/create': createCourse,
+  '/course/delete': deleteCourse,
+  '/course/update': updateCourse,
 } as { [key: string]: ObjectSchema };
