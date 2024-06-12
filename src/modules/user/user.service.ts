@@ -33,6 +33,7 @@ export class UserService {
         roleId: AppObject.ROLE_CODE.MANAGER,
         isActive: true
       });
+      console.log('newUser', newUser);
 
       //SEND MAIL HERE
       const mailOptions = {

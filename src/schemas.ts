@@ -19,6 +19,7 @@ const createManager = Joi.object().keys({
   code: Joi.string().required(),
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),
+  isActive: Joi.boolean().optional(),
   gender: Joi.number().optional(),
   phoneNumber: Joi.string().optional(),
   dateOfBirth: Joi.date().optional()
@@ -29,6 +30,7 @@ const updateManager = Joi.object().keys({
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),
   gender: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
   phoneNumber: Joi.string().optional(),
   dateOfBirth: Joi.date().optional()
 });
@@ -43,7 +45,7 @@ const createCourse = Joi.object().keys({
   code: Joi.string().required(),
   name: Joi.string().required(),
   description: Joi.string().optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 });
 
 const updateCourse = Joi.object().keys({
@@ -51,10 +53,8 @@ const updateCourse = Joi.object().keys({
   code: Joi.string().optional(),
   name: Joi.string().optional(),
   description: Joi.string().optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 });
-
-
 
 export default {
   '/auth/signIn': authSignIn,
@@ -62,5 +62,5 @@ export default {
   '/manager/create': createManager,
   '/manager/update': updateManager,
   '/semester/create': createSemester,
-  '/course/create': createCourse,
+  '/course/create': createCourse
 } as { [key: string]: ObjectSchema };
