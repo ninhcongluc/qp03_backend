@@ -24,6 +24,7 @@ const createManager = Joi.object().keys({
   phoneNumber: Joi.string().optional(),
   dateOfBirth: Joi.date().optional()
 });
+
 const updateManager = Joi.object().keys({
   email: Joi.string().email().min(6).optional(),
   code: Joi.string().optional(),
@@ -34,6 +35,7 @@ const updateManager = Joi.object().keys({
   phoneNumber: Joi.string().optional(),
   dateOfBirth: Joi.date().optional()
 });
+
 const createSemester = Joi.object().keys({
   name: Joi.string().required(),
   startDate: Joi.date().required(),
@@ -55,6 +57,25 @@ const updateCourse = Joi.object().keys({
   description: Joi.string().optional(),
   isActive: Joi.boolean().optional()
 });
+const createQuiz = Joi.object().keys({
+  name: Joi.string().required(),
+  description: Joi.string().required(),
+  startDate: Joi.date().required(),
+  endDate: Joi.date().required(),
+  timeLimitMinutes: Joi.number().required(),
+  score: Joi.number().required(),
+  isHidden: Joi.boolean().required()
+});
+
+const updateQuiz = Joi.object().keys({
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  startDate: Joi.date().optional(),
+  endDate: Joi.date().optional(),
+  timeLimitMinutes: Joi.number().optional(),
+  score: Joi.number().optional(),
+  isHidden: Joi.boolean().optional()
+});
 
 export default {
   '/auth/signIn': authSignIn,
@@ -62,5 +83,7 @@ export default {
   '/manager/create': createManager,
   '/manager/update': updateManager,
   '/semester/create': createSemester,
-  '/course/create': createCourse
+  '/course/create': createCourse,
+  '/quiz/create': createQuiz,
+  '/quiz/update': updateQuiz
 } as { [key: string]: ObjectSchema };
