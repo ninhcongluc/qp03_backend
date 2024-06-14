@@ -40,26 +40,21 @@ const createSemester = Joi.object().keys({
   endDate: Joi.date().required()
 });
 
-const createQuiz = Joi.object().keys({
+const createCourse = Joi.object().keys({
+  semesterId: Joi.string().required(),
+  code: Joi.string().required(),
   name: Joi.string().required(),
-  description: Joi.string().required(),
-  startDate: Joi.date().required(),
-  endDate: Joi.date().required(),
-  timeLimitMinutes: Joi.number().required(),
-  score: Joi.number().required(),
-  isHidden: Joi.boolean().required(),
+  description: Joi.string().optional(),
+  isActive: Joi.boolean().optional()
 });
 
-const updateQuiz = Joi.object().keys({
+const updateCourse = Joi.object().keys({
+  semesterId: Joi.string().optional(),
+  code: Joi.string().optional(),
   name: Joi.string().optional(),
   description: Joi.string().optional(),
-  startDate: Joi.date().optional(),
-  endDate: Joi.date().optional(),
-  timeLimitMinutes: Joi.number().optional(),
-  score: Joi.number().optional(),
-  isHidden: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 });
-
 
 export default {
   '/auth/signIn': authSignIn,
@@ -67,6 +62,5 @@ export default {
   '/manager/create': createManager,
   '/manager/update': updateManager,
   '/semester/create': createSemester,
-  '/quiz/create': createQuiz,
-  '/quiz/update': updateQuiz
+  '/course/create': createCourse
 } as { [key: string]: ObjectSchema };
