@@ -67,7 +67,7 @@ export class UserService {
     }
   }
 
-  async getDetailUser(userId) {
+  async getDetailUser(userId: string): Promise<User | null> {
     try {
       return await this.userRepository.findOne({ where: { id: userId } });
     } catch (error) {
@@ -95,6 +95,66 @@ export class UserService {
         throw new Error('User not found');
       }
       await this.userRepository.delete({ id });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async listTeacherAccounts(): Promise<User[]> {
+    try {
+      return await this.userRepository.find({ where: { roleId: AppObject.ROLE_CODE.TEACHER } });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async getTeacherDetails(userId: string): Promise<User | null> {
+    try {
+      return await this.userRepository.findOne({
+        where: { id: userId, roleId: AppObject.ROLE_CODE.TEACHER },
+        relations: ['courses'],
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async deleteTeacherAccount(id) {
+    try {
+      const user = await this.userRepository.findOne({ where: { id, roleId: AppObject.ROLE_CODE.TEACHER } });
+      if (!user) {
+        throw new Error('Teacher not found');
+      }
+      await this.userRepository.delete({ id });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async updateTeacherAccount(id, data) {
+    try {
+      const user = await this.userRepository.findOne({ where: { id, roleId: AppObject.ROLE_CODE.TEACHER } });
+      if (!user) {
+        throw new Error('Teacher not found');
+      }
+      return await this.userRepository.update({ id }, data);
+      //SEND MAIL HERE
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    try {
+      return await this.userRepository.findOne({ where: { email } });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async getUserByCode(code: string): Promise<User | null> {
+    try {
+      return await this.userRepository.findOne({ where: { id: code } });
     } catch (error) {
       throw new Error(error);
     }

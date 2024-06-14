@@ -63,6 +63,51 @@ export class UserController {
     }
   }
 
+  async deleteTeacherAccount(req: Request, res: Response) {
+    try {
+      const id = req.params.id;
+      const newUser = await this.userService.deleteTeacherAccount(id);
+      return res.status(201).send({ data: newUser, status: StatusCodes.CREATED });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async updateTeacherAccount(req: Request, res: Response) {
+    try {
+      const id = req.params.id;
+      const updatedUser = await this.userService.updateTeacherAccount(id, req.body);
+      return res.status(201).send({ data: updatedUser, status: StatusCodes.CREATED });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async searchUsers(req: Request, res: Response) {
+    try {
+      const { searchTerm } = req.query;
+      let users;
+      if (typeof searchTerm === 'string' && searchTerm.includes('@')) {
+        users = await this.userService.getUserByEmail(searchTerm);
+      } else if (typeof searchTerm === 'string') {
+        users = await this.userService.getUserByCode(searchTerm);
+      } else {
+        return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid search term' });
+      }
+
+      if (!users || users.length === 0) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          error: 'No users found',
+        });
+      }
+
+      return res.status(StatusCodes.OK).json({ data: users });
+    } catch (error) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    }
+  }
+
+
   async listStudentAccount(req: Request, res: Response) {
     try {
       const users = await this.userService.listAccountByRole(AppObject.ROLE_CODE.STUDENT);
