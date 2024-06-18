@@ -112,7 +112,7 @@ export class UserService {
     try {
       return await this.userRepository.findOne({
         where: { id: userId, roleId: AppObject.ROLE_CODE.TEACHER },
-        relations: ['courses'],
+        relations: ['courses']
       });
     } catch (error) {
       throw new Error(error);
@@ -138,7 +138,6 @@ export class UserService {
         throw new Error('Teacher not found');
       }
       return await this.userRepository.update({ id }, data);
-      //SEND MAIL HERE
     } catch (error) {
       throw new Error(error);
     }

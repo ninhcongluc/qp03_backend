@@ -24,7 +24,7 @@ export class UserController {
     }
   }
 
-  async getDetailManager(req: Request, res: Response) {
+  async getDetailUser(req: Request, res: Response) {
     try {
       const userId = req.params.id;
       const user = await this.userService.getDetailUser(userId);
@@ -97,7 +97,7 @@ export class UserController {
 
       if (!users || users.length === 0) {
         return res.status(StatusCodes.NOT_FOUND).json({
-          error: 'No users found',
+          error: 'No users found'
         });
       }
 
@@ -106,7 +106,6 @@ export class UserController {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
     }
   }
-
 
   async listStudentAccount(req: Request, res: Response) {
     try {
