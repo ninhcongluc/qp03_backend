@@ -107,13 +107,27 @@ export class UserController {
     }
   }
 
-  async listStudentAccount(req: Request, res: Response) {
+  async listStudentInClass(req: Request, res: Response) {
     try {
-      const users = await this.userService.listAccountByRole(AppObject.ROLE_CODE.STUDENT);
+      const classId = req.params.id;
+      const users = await this.userService.listStudentInClass(classId);
       return res.status(200).send({ data: users, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
+  }
+  async importStudent(data, classId) {
+    console.log(data);
+    const preparedData = data.map(item => {
+      return {
+        code: item['Code'],
+        email: item['Email'],
+        firstName: item['Name'],
+        phoneNumber: item['Phone'],
+        roleId: 4
+      };
+    });
+    return await this.userService.importStudent(preparedData, classId);
   }
 
   async getUserProfile(req, res) {

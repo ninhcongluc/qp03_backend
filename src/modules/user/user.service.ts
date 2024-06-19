@@ -1,16 +1,20 @@
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { User } from '../user/user.model';
 import { AppObject } from '../../commons/consts/app.objects';
 import * as bcrypt from 'bcrypt';
+import { exist } from 'joi';
+import { ClassParticipants } from '../class_participants/class-participants.model';
 
 const EmailService = require('../../configs/send-mail');
 const emailService = new EmailService();
 
 export class UserService {
   private userRepository: Repository<User>;
+  private classParticipantsRepository: Repository<ClassParticipants>;
 
   constructor(private readonly dataSource: DataSource) {
     this.userRepository = this.dataSource.getRepository(User);
+    this.classParticipantsRepository = this.dataSource.getRepository(ClassParticipants);
   }
 
   async createManagerAccount(data) {
@@ -126,6 +130,52 @@ export class UserService {
         throw new Error('Teacher not found');
       }
       await this.userRepository.delete({ id });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async importStudent(preparedData, classId) {
+    try {
+      console.log('preparedData', preparedData);
+
+      // Remove all students from the class
+      const oldParticipants = await this.classParticipantsRepository.find({ where: { classId: classId } });
+      await this.classParticipantsRepository.remove(oldParticipants);
+
+      const newUsers = await Promise.all(
+        preparedData.map(async user => {
+          // Check if a user with the same email already exists
+          let existingUser = await this.userRepository.findOne({ where: { email: user.email } });
+
+          if (!existingUser) {
+            // If the user does not exist, create a new user
+            existingUser = await this.userRepository.save(user);
+          }
+
+          // Create a new class participant
+          const classParticipant = new ClassParticipants();
+          classParticipant.userId = existingUser.id;
+          classParticipant.classId = classId;
+          await this.classParticipantsRepository.save(classParticipant);
+
+          return existingUser;
+        })
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async listStudentInClass(classId: string) {
+    try {
+      const students = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoin('user.classParticipants', 'classParticipants')
+        .where('user.roleId = :roleId', { roleId: AppObject.ROLE_CODE.STUDENT })
+        .andWhere('classParticipants.classId = :classId', { classId })
+        .getMany();
+      return students;
     } catch (error) {
       throw new Error(error);
     }

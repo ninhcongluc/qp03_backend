@@ -1,11 +1,13 @@
-import { Router, Request, Response } from 'express';
-import { authentication, authorization } from '../auth/auth.middleware';
-import { UserService } from './user.service';
-import AppDataSource from '../../configs/connect-db';
-import { UserController } from './user.controller';
-import schemaValidator from '../../middleware/schemaValidator';
+import { Request, Response, Router } from 'express';
 import multer from 'multer';
+import path from 'path';
 import xlsx from 'xlsx';
+import fs from 'fs';
+import AppDataSource from '../../configs/connect-db';
+import schemaValidator from '../../middleware/schemaValidator';
+import { authentication, authorization } from '../auth/auth.middleware';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
 const userRouter = Router();
 const userService = new UserService(AppDataSource);
 const userController = new UserController(userService);
@@ -65,19 +67,27 @@ userRouter.get('/teacher/:id', authentication, authorization(['manager', 'teache
   return userController.getDetailUser(req, res);
 });
 
+const uploadDir = path.join('src', 'uploads');
+
 // Set up multer for file uploads
+fs.promises.mkdir(uploadDir, { recursive: true }).catch(console.error);
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    const filename = `${Date.now()}-${file.originalname}`;
+    const fullPath = path.join(uploadDir, filename);
+    console.log(`File will be stored at: ${fullPath}`);
+    cb(null, filename);
   }
 });
 const upload = multer({ storage });
 
 // Endpoint to handle Excel file upload
-userRouter.post('/upload', upload.single('file'), (req, res) => {
+userRouter.post('/teacher/import-student/:classId', upload.single('file'), async (req, res) => {
+  const classId = req.params.classId;
   try {
     const filePath = req.file.path;
     const workbook = xlsx.readFile(filePath);
@@ -87,7 +97,7 @@ userRouter.post('/upload', upload.single('file'), (req, res) => {
     console.log('Data:', data);
 
     // Process the data (e.g., save to a database)
-    console.log(data);
+    await userController.importStudent(data, classId);
 
     res.status(200).json({ message: 'File uploaded and processed successfully', data });
   } catch (error) {
@@ -96,8 +106,8 @@ userRouter.post('/upload', upload.single('file'), (req, res) => {
   }
 });
 
-userRouter.get('/student/list', authentication, (req: Request, res: Response) => {
-  return userController.listStudentAccount(req, res);
+userRouter.get('/student/:classId', (req: Request, res: Response) => {
+  return userController.listStudentInClass(req, res);
 });
 
 //Profile

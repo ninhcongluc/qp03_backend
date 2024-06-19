@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Role } from '../role/role.model';
+import { ClassParticipants } from '../class_participants/class-participants.model';
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -17,7 +18,7 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   lastName?: string;
 
-  @Column({ nullable: true, unique: true})
+  @Column({ nullable: true, unique: true })
   email?: string;
 
   @Column({ type: 'smallint', nullable: true })
@@ -55,6 +56,9 @@ export class User {
 
   @Column({ nullable: false })
   roleId: number;
+
+  @OneToMany(() => ClassParticipants, classParticipants => classParticipants.user)
+  classParticipants: ClassParticipants[];
 
   @ManyToOne(() => Role, { onDelete: 'NO ACTION' })
   role?: Role;
