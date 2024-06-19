@@ -141,7 +141,11 @@ export class UserService {
 
       // Remove all students from the class
       const oldParticipants = await this.classParticipantsRepository.find({ where: { classId: classId } });
-      await this.classParticipantsRepository.remove(oldParticipants);
+      const participantIds = oldParticipants.map(participant => participant.id);
+      await this.classParticipantsRepository.delete({ id: In(participantIds) });
+
+      // Remove students from the user table
+      await this.userRepository.delete({ id: In(participantIds) });
 
       const newUsers = await Promise.all(
         preparedData.map(async user => {
@@ -168,6 +172,7 @@ export class UserService {
   }
 
   async listStudentInClass(classId: string) {
+    console.log('classId', classId);
     try {
       const students = await this.userRepository
         .createQueryBuilder('user')

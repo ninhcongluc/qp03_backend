@@ -109,7 +109,7 @@ export class UserController {
 
   async listStudentInClass(req: Request, res: Response) {
     try {
-      const classId = req.params.id;
+      const classId = req.params.classId;
       const users = await this.userService.listStudentInClass(classId);
       return res.status(200).send({ data: users, status: StatusCodes.OK });
     } catch (error) {
