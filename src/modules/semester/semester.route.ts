@@ -17,7 +17,7 @@ semesterRouter.post(
     return semesterController.createSemester(req, res);
   }
 );
-semesterRouter.get('/semester', authentication, (req: Request, res: Response) => {
+semesterRouter.get('/semester', (req: Request, res: Response) => {
   return semesterController.listSemester(req, res);
 });
 

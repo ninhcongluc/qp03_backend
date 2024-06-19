@@ -22,11 +22,8 @@ courseRouter.get('/course', (req: Request, res: Response) => {
   return courseController.listCourse(req, res);
 });
 
-courseRouter.get(
-  '/course/:id',
-  authentication,
-  authorization(['manager, teacher, student']),
-  (req: Request, res: Response) => {
-    return courseController.getDetailCourse(req, res);
-  }
-);
+courseRouter.get('/course/:id', (req: Request, res: Response) => {
+  return courseController.getDetailCourse(req, res);
+});
+
+export default courseRouter;

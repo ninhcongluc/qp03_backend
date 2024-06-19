@@ -16,4 +16,8 @@ export class AppObject {
   static readonly EMAIL_HOST = ['fpt.edu.vn', 'fe.edu.vn'];
 
   static readonly MAX_FILE_SIZE = 10000000;
+
+  static readonly DEFAULT_PAGE = 1;
+
+  static readonly DEFAULT_LIMIT = 10;
 }

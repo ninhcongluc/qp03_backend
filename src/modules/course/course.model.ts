@@ -1,6 +1,7 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
 import { User } from '../user/user.model';
 import { Semester } from '../semester/semester.model';
+import { Class } from '../class/class.model';
 
 @Entity('course')
 export class Course {
@@ -30,6 +31,9 @@ export class Course {
 
   @Column({ type: 'date', default: new Date() })
   updatedAt: Date;
+
+  @OneToMany(() => Class, classEntity => classEntity.course)
+  classes: Class[];
 
   @ManyToOne(() => User)
   manager: User;

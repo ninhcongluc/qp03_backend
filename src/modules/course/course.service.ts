@@ -29,24 +29,49 @@ export class CourseService {
     }
   }
 
-  async listCourse(code: string, page = 1, limit = 20) {
+  async listCourse(query) {
     try {
-      const query = this.courseRepository.createQueryBuilder('course');
-      if (code) {
-        query.where('course.code = :code', { code });
+      const { code, page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT } = query;
+      const queryBuilder = this.courseRepository
+        .createQueryBuilder('course')
+        .leftJoin('course.classes', 'class')
+        .leftJoinAndSelect('course.semester', 'semester')
+        .where('1=1');
+      if (query.teacherId) {
+        queryBuilder.andWhere('class.teacherId = :teacherId', { teacherId: query.teacherId });
       }
-      query.orderBy('course.createdAt', 'ASC');
-      query.skip((page - 1) * limit);
-      query.take(limit);
-      return await query.getMany();
+      if (code) {
+        queryBuilder.andWhere('course.code ILike :code', { code: `%${code}%` });
+      }
+      queryBuilder.orderBy('course.createdAt', 'ASC');
+      queryBuilder.skip((Number(page) - 1) * Number(limit));
+      queryBuilder.take(Number(limit));
+
+      const [courses, total] = await queryBuilder.getManyAndCount();
+
+      return {
+        page: Number(page),
+        total,
+        courses
+      };
     } catch (error) {
       return error;
     }
   }
 
-  async getDetailCourse(courseId: string) {
+  async getDetailCourse(courseId: string, query) {
     try {
-      return await this.courseRepository.findOne({ where: { id: courseId } });
+      const queryBuilder = this.courseRepository
+        .createQueryBuilder('course')
+        .leftJoinAndSelect('course.classes', 'class')
+        .leftJoinAndSelect('course.semester', 'semester')
+        .where('course.id = :courseId', { courseId });
+
+      if (query.teacherId) {
+        queryBuilder.andWhere('class.teacherId = :teacherId', { teacherId: query.teacherId });
+      }
+
+      return await queryBuilder.getOne();
     } catch (error) {
       return error;
     }
