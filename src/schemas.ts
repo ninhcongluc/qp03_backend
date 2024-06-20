@@ -58,16 +58,18 @@ const updateCourse = Joi.object().keys({
   isActive: Joi.boolean().optional()
 });
 const createQuiz = Joi.object().keys({
+  classId: Joi.string().required(),
   name: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string().optional(),
   startDate: Joi.date().required(),
   endDate: Joi.date().required(),
   timeLimitMinutes: Joi.number().required(),
   score: Joi.number().required(),
-  isHidden: Joi.boolean().required()
+  isHidden: Joi.boolean().optional()
 });
 
 const updateQuiz = Joi.object().keys({
+  classId: Joi.string().required(),
   name: Joi.string().optional(),
   description: Joi.string().optional(),
   startDate: Joi.date().optional(),

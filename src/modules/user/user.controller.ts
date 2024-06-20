@@ -15,6 +15,15 @@ export class UserController {
     }
   }
 
+  async changePassword(req: Request, res: Response) {
+    try {
+      await this.userService.changePassword(req.body);
+      return res.status(200).send({ message: 'Success', status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
   async listManagerAccount(req: Request, res: Response) {
     try {
       const users = await this.userService.listAccountByRole(AppObject.ROLE_CODE.MANAGER);
@@ -47,8 +56,8 @@ export class UserController {
   async deleteManagerAccount(req: Request, res: Response) {
     try {
       const id = req.params.id;
-      const newUser = await this.userService.deleteManagerAccount(id);
-      return res.status(201).send({ data: newUser, status: StatusCodes.CREATED });
+      await this.userService.deleteManagerAccount(id);
+      return res.status(200).send({ message: 'You have deleted successfully', status: StatusCodes.CREATED });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }

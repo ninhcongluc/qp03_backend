@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Class } from '../class/class.model';
+import { Question } from '../question/question.model';
 
 @Entity('quiz')
 export class Quiz {
@@ -38,4 +39,7 @@ export class Quiz {
 
   @ManyToOne(() => Class)
   class: Class;
+
+  @OneToMany(() => Question, classEntity => classEntity.quiz)
+  questions: Question[];
 }

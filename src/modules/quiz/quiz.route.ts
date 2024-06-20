@@ -11,9 +11,9 @@ const quizController = new QuizController(quizService);
 
 // Quiz routes
 quizRouter.post(
-  '/create/:classId',
-  authentication,
-  authorization(['teacher']),
+  '/quiz/create',
+  // authentication,
+  // authorization(['teacher']),
   schemaValidator('/quiz/create'),
   (req: Request, res: Response) => {
     return quizController.createQuiz(req, res);
@@ -38,23 +38,22 @@ quizRouter.get(
   }
 );
 
-quizRouter.delete(
-  '/deleteQuiz/:classId&&:name',
-  authentication,
-  authorization(['teacher']),
-  (req: Request, res: Response) => {
-    return quizController.deleteQuiz(req, res);
-  }
-);
+quizRouter.delete('/quiz/:id', (req: Request, res: Response) => {
+  return quizController.deleteQuiz(req, res);
+});
 
 quizRouter.put(
-  '/updateQuiz/:classId&&:name',
-  authentication,
-  authorization(['teacher']),
+  '/quiz/:id',
+  // authentication,
+  // authorization(['teacher']),
   schemaValidator('/quiz/update'),
   (req: Request, res: Response) => {
     return quizController.updateQuiz(req, res);
   }
 );
+
+quizRouter.get('/quiz/:id/questions', (req: Request, res: Response) => {
+  return quizController.listQuestionAnswers(req, res);
+});
 
 export default quizRouter;

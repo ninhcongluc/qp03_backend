@@ -55,6 +55,25 @@ export class UserService {
     }
   }
 
+  async changePassword(data) {
+    try {
+      const { email, oldPassword, newPassword } = data;
+      const user = await this.userRepository.findOne({ where: { email } });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      // const isMatch = bcrypt.compareSync(oldPassword, user.password);
+      // if (!isMatch) {
+      //   throw new Error('Old password is incorrect');
+      // }
+      const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
+      const hashPassword = bcrypt.hashSync(newPassword, salt);
+      return await this.userRepository.update({ email }, { password: hashPassword });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async listAccountByRole(roleId: number) {
     try {
       return await this.userRepository.find({ where: { roleId } });

@@ -23,6 +23,10 @@ userRouter.post(
   }
 );
 
+userRouter.put('/user/change-pass', (req: Request, res: Response) => {
+  return userController.changePassword(req, res);
+});
+
 userRouter.get('/manager/list', authentication, authorization(['admin']), (req: Request, res: Response) => {
   return userController.listManagerAccount(req, res);
 });

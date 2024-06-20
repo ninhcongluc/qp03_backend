@@ -1,4 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
+import { Question } from '../question/question.model';
 
 @Entity('answer_option')
 export class AnswerOption {
@@ -19,4 +20,7 @@ export class AnswerOption {
 
   @Column({ type: 'date', default: new Date() })
   updatedAt: Date;
+
+  @ManyToOne(() => Question)
+  question: Question;
 }
