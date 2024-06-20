@@ -7,6 +7,7 @@ export class ClassService {
         this.classRepository = this.dataSource.getRepository(Class);
     }
 
+    
     async listClassForTeacher(teacherId: String) {
         try {
             return await this.classRepository.find({ where: { teacherId: String(teacherId) } });

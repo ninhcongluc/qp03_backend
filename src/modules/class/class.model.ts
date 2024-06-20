@@ -51,4 +51,5 @@ export class Class {
 
   @ManyToOne(() => User)
   teacher: User;
+  
 }
