@@ -11,6 +11,7 @@ import { UserService } from './user.service';
 const userRouter = Router();
 const userService = new UserService(AppDataSource);
 const userController = new UserController(userService);
+import axios from 'axios';
 
 // Manager routes
 userRouter.post(
@@ -113,6 +114,23 @@ userRouter.get('/student/:classId', (req: Request, res: Response) => {
 //Profile
 userRouter.get('/user/profile', authentication, (req: Request, res: Response) => {
   return userController.getUserProfile(req, res);
+});
+
+userRouter.get('/user/profile', authentication, async (req: Request, res: Response) => {
+  try {
+    // Call the /api/profile endpoint to fetch the user's name
+    const response = await axios.get('/api/profile');
+    const userName = response.data.name;
+
+    // Pass the user's name to the getUserProfile method
+    const { firstName, lastName, error } = await userController.getUserProfile(req, res, userName);
+    if (error) {
+      return res.status(500).json({ error });
+    }
+    return res.status(200).json({ firstName, lastName });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 export default userRouter;

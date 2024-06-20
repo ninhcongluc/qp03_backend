@@ -4,7 +4,7 @@ import { UserService } from './user.service';
 import { AppObject } from '../../commons/consts/app.objects';
 
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   async createManagerAccount(req: Request, res: Response) {
     try {
@@ -140,4 +140,15 @@ export class UserController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
+  async getUserName(req: Request, res: Response) {
+    try {
+      const userId = req.user._id; // Assuming `req.user._id` contains the authenticated user's ID
+      const userName = await this.userService.getUserNameById(userId);
+      return res.status(StatusCodes.OK).send({ data: userName, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(StatusCodes.BAD_REQUEST).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
 }
