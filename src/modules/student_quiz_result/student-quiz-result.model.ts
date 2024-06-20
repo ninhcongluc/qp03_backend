@@ -5,7 +5,7 @@ import { User } from '../user/user.model';
 @Entity('student_quiz_results')
 export class StudentQuizResult {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  id?: string ;
 
   @Column({ type: 'uuid' })
   quizId: string;

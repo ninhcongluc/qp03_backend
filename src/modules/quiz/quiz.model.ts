@@ -36,6 +36,6 @@ export class Quiz {
   @Column({ type: 'timestamp', default: new Date() })
   updatedAt: Date;
 
-  @ManyToOne(() => Class)
+  @ManyToOne(() => Class )
   class: Class;
 }

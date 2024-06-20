@@ -17,10 +17,12 @@ quizRouter.post(
   schemaValidator('/quiz/create'),
   (req: Request, res: Response) => {
     return quizController.createQuiz(req, res);
+
   }
 );
 
 quizRouter.get(
+  
   '/quiz/:classId',
   // authentication,
   // authorization(['teacher', 'student']),

@@ -18,6 +18,7 @@ export class QuizController {
       } 
       if(timeLimitMinutes < 0){
         throw new Error("Invalid time limit");
+        
       }
       if(scoreToPass < 0 || scoreToPass > 100){
         throw new Error("Invalid score to pass");

@@ -23,7 +23,7 @@ export class QuizService {
             }
             const newQuiz = this.quizRepository
                 .create({
-                    classId: String(classId),
+                    classId: String(classId) ,
                     ...data,
                     isActive: true,
                 });
@@ -35,17 +35,18 @@ export class QuizService {
 
     async listQuiz(classId: String) {
         try {
-            const classExisted = await this.dataSource.getRepository(Class).findOne({ where: { id: String(classId) } });
+            const classExisted = await this.dataSource.getRepository(Class).findOne({  where: { id: String(classId) } });
             if (!classExisted) {
                 throw new Error("Class not found");
             }
-            return await this.quizRepository.find({ where: { classId: String(classId) } });
+            return await this.quizRepository.find({  where: { classId: String(classId) } });
         } catch (error) {
             return error;
         }
     }
 
     async getDetailQuiz(quizName: String, classId: String) {
+        
         try {
             const classExisted = await this.dataSource.getRepository(Class).findOne({ where: { id: String(classId) } });
             if (!classExisted) {
