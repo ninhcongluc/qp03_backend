@@ -9,10 +9,10 @@ export class AnswerOption {
   questionId: string;
 
   @Column({ nullable: false })
-  optionText: string;
+  optionText:string;
 
   @Column({ type: 'boolean' })
-  isCorrect: boolean;
+  isCorrect:boolean;
 
   @Column({ type: 'timestamp', default: new Date() })
   createdAt?: Date;
