@@ -9,6 +9,7 @@ const classService = new ClassService(AppDataSource);
 const classController = new ClassController(classService);
 
 classRouter.get('/listClassForTeacher/:teacherId', 
+    
     authentication,
     authorization(["teacher"]),
     (req: Request, res: Response) => {
