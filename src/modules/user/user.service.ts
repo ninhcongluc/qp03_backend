@@ -57,15 +57,22 @@ export class UserService {
 
   async changePassword(data) {
     try {
-      const { email, oldPassword, newPassword } = data;
+      const { email, oldPassword, newPassword, confirmPassword } = data;
       const user = await this.userRepository.findOne({ where: { email } });
       if (!user) {
         throw new Error('User not found');
       }
-      // const isMatch = bcrypt.compareSync(oldPassword, user.password);
-      // if (!isMatch) {
-      //   throw new Error('Old password is incorrect');
-      // }
+      // check mat khau cu co dung khong
+      const isMatch = bcrypt.compareSync(oldPassword, user.password);
+      if (!isMatch) {
+        throw new Error('Old password is incorrect');
+      }
+
+      // check mat khau moi va mat khau xac nhan co giong nhau khong
+      if (newPassword !== confirmPassword) {
+        throw new Error('New password and confirm password do not match');
+      }
+      // ma hoa mat khau moi
       const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
       const hashPassword = bcrypt.hashSync(newPassword, salt);
       return await this.userRepository.update({ email }, { password: hashPassword });

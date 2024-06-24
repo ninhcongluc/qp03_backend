@@ -23,7 +23,7 @@ userRouter.post(
   }
 );
 
-userRouter.put('/user/change-pass', (req: Request, res: Response) => {
+userRouter.put('/user/change-password', (req: Request, res: Response) => {
   return userController.changePassword(req, res);
 });
 
@@ -98,6 +98,8 @@ userRouter.post('/teacher/import-student/:classId', upload.single('file'), async
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet);
+    // fs.promises.unlink(filePath).catch(console.error);
+
     console.log('Data:', data);
 
     // Process the data (e.g., save to a database)

@@ -42,6 +42,10 @@ export class User {
   @Column({ default: false })
   isDeleted?: boolean;
 
+  otpCode: string;
+
+  otpExpiredAt: Date;
+
   @Column({
     type: 'timestamp',
     default: new Date()
