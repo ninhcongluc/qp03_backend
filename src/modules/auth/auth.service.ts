@@ -15,13 +15,16 @@ export class AuthService {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
-      .where('user.email = :email', { email })
+      .where('user.email = :email and user.isDeleted = false', { email })
       .getOne();
 
     if (!user) throw new Error('User not found');
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) throw new Error('Password is incorrect');
-    // if (password !== user.password) throw new Error('Password is incorrect');
+
+    if (!user.isActive) {
+      throw new Error('Your account is not active');
+    }
 
     const accessToken = await jwt.sign(
       {

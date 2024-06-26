@@ -37,14 +37,20 @@ export class UserService {
         roleId: AppObject.ROLE_CODE.MANAGER,
         isActive: true
       });
-      console.log('newUser', newUser);
 
       //SEND MAIL HERE
       const mailOptions = {
         from: 'hongndhs171344@fpt.edu.vn',
         to: email,
-        subject: 'Your account has been created',
-        text: `Your account has been created with password: ${generatedPassword}`
+        subject: 'Your are invited to join Quiz Practice System',
+        html: `
+          <div style="background-color: #f2f2f2; padding: 20px;">
+        <h2>Welcome to Quiz Practice System</h2>
+        <p>Thank you for joining our platform. Here are your login details:</p>
+        <p>Email: ${email}</p>
+        <p><strong>Password: ${generatedPassword}</strong></p>
+          </div>
+        `
       };
       await emailService.sendEmail(mailOptions);
       console.log('Welcome email sent to', email);
@@ -83,7 +89,7 @@ export class UserService {
 
   async listAccountByRole(roleId: number) {
     try {
-      return await this.userRepository.find({ where: { roleId } });
+      return await this.userRepository.find({ where: { roleId, isDeleted: false } });
     } catch (error) {
       return error;
     }
@@ -94,6 +100,39 @@ export class UserService {
       return await this.userRepository.findOne({ where: { id: userId } });
     } catch (error) {
       return error;
+    }
+  }
+
+  async forgotPassword(email: string) {
+    try {
+      // find user with email
+      const user = await this.userRepository.findOne({ where: { email } });
+      // check user existed
+      if (!user) {
+        throw new Error('User not found');
+      }
+      // generate otp code with 5 numbers
+      const otpCode = Math.floor(10000 + Math.random() * 90000).toString();
+      // otpCode + otpExpiredAt (after 5 minutes) => save to user
+      const otpExpiredAt = new Date();
+      otpExpiredAt.setMinutes(otpExpiredAt.getMinutes() + 5);
+      await this.userRepository.update({ id: user.id }, { otpCode, otpExpiredAt });
+
+      // send otp code to email
+      const mailOptions = {
+        from: 'hongndhs171344@fpt.edu.vn',
+        to: email,
+        subject: 'Your are invited to join Quiz Practice System',
+        html: `
+          <div style="background-color: #f2f2f2; padding: 20px;">
+        <h2>Welcome to Quiz Practice System</h2>
+        <p>Thank you for joining our platform. Here are your login details:</p>
+          </div>
+        `
+      };
+      await emailService.sendEmail(mailOptions);
+    } catch (error) {
+      throw new Error(error);
     }
   }
 
@@ -124,6 +163,7 @@ export class UserService {
       if (!user) {
         throw new Error('User not found');
       }
+
       await this.userRepository.delete({ id });
     } catch (error) {
       throw new Error(error);

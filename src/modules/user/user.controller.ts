@@ -57,7 +57,7 @@ export class UserController {
     try {
       const id = req.params.id;
       await this.userService.deleteManagerAccount(id);
-      return res.status(200).send({ message: 'You have deleted successfully', status: StatusCodes.CREATED });
+      return res.status(200).send({ message: 'You have deleted successfully', status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }

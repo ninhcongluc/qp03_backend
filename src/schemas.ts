@@ -17,11 +17,11 @@ const authSignIn = Joi.object().keys({
 const createManager = Joi.object().keys({
   email: Joi.string().email().min(6).required(),
   code: Joi.string().required(),
-  firstName: Joi.string().optional(),
-  lastName: Joi.string().optional(),
+  firstName: Joi.string().optional().allow(''),
+  lastName: Joi.string().optional().allow(''),
   isActive: Joi.boolean().optional(),
   gender: Joi.number().optional(),
-  phoneNumber: Joi.string().optional(),
+  phoneNumber: Joi.string().optional().allow(''),
   dateOfBirth: Joi.date().optional()
 });
 
