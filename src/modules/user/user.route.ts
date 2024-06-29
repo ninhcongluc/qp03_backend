@@ -112,6 +112,27 @@ userRouter.post('/teacher/import-student/:classId', upload.single('file'), async
   }
 });
 
+userRouter.post('/manager/import-teacher', upload.single('file'), async (req, res) => {
+  try {
+    const filePath = req.file.path;
+    const workbook = xlsx.readFile(filePath, {cellDates: true });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet);
+    await fs.promises.unlink(filePath).catch(console.error);
+
+    console.log('Data:', data);
+    // Process the data (e.g., save to a database)
+    await userController.importTeacher(data);
+
+    res.status(200).json({ message: 'File uploaded and processed successfully', data });
+  } catch (error) {
+    console.error('Error processing file:', error);
+    res.status(500).json({ message: 'Error processing file', error });
+  }
+});
+
+
 userRouter.get('/student/:classId', (req: Request, res: Response) => {
   return userController.listStudentInClass(req, res);
 });
