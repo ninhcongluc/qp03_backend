@@ -56,15 +56,16 @@ export class SemesterService {
   }
 
   async deleteSemester(semesterId: string) {
-    console.log('semesterId', semesterId);
     try {
+      const isSemesterUsed = await this.checkSemesterIsUsed(semesterId);
+      if (isSemesterUsed) {
+        throw new Error('Semester is used in course');
+      }
       const semester = await this.semesterRepository.findOne({
         where: {
           id: semesterId
         }
       });
-
-      console.log(semester);
       if (!semester) {
         throw new Error('Semester is not exist');
       }
@@ -73,5 +74,16 @@ export class SemesterService {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async checkSemesterIsUsed(semesterId: string) {
+    // kiểm tra xem semester có được sử dụng trong course không
+    const course = await this.dataSource
+      .getRepository('course')
+      .createQueryBuilder('course')
+      .where('course.semesterId = :semesterId', { semesterId })
+      .getOne();
+
+    return course ? true : false;
   }
 }

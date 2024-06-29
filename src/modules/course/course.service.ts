@@ -31,7 +31,7 @@ export class CourseService {
 
   async listCourse(query) {
     try {
-      const { code, page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT } = query;
+      const { code, page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT, semesterId } = query;
       const queryBuilder = this.courseRepository
         .createQueryBuilder('course')
         .leftJoin('course.classes', 'class')
@@ -42,6 +42,10 @@ export class CourseService {
       }
       if (code) {
         queryBuilder.andWhere('course.code ILike :code', { code: `%${code}%` });
+      }
+
+      if (semesterId) {
+        queryBuilder.andWhere('course.semesterId = :semesterId', { semesterId: query.semesterId });
       }
       queryBuilder.orderBy('course.createdAt', 'ASC');
       queryBuilder.skip((Number(page) - 1) * Number(limit));
