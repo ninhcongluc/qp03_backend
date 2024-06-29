@@ -4,7 +4,7 @@ import { UserService } from './user.service';
 import { AppObject } from '../../commons/consts/app.objects';
 
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   async createManagerAccount(req: Request, res: Response) {
     try {
@@ -138,6 +138,48 @@ export class UserController {
     });
     return await this.userService.importStudent(preparedData, classId);
   }
+
+  async importTeacher(data) {
+    try {
+        const preparedData = [];
+
+         for (const item of data) {
+        //     if (!item['Code']) {
+        //         return res.status(400).send({ error: 'Code is required', status: 'BAD_REQUEST' });
+        //     }
+            // if (!item['Email'] || !this.validateEmail(item['Email'])) {
+            //     return res.status(400).send({ error: 'Valid email is required', status: 'BAD_REQUEST' });
+            // }
+            // if (!item['firstName']) {
+            //     return res.status(400).send({ error: 'First name is required', status: 'BAD_REQUEST' });
+            // }
+            // if (!item['lastName']) {
+            //     return res.status(400).send({ error: 'Last name is required', status: 'BAD_REQUEST' });
+            // }
+            // if (!item['Phone'] || !this.validatePhoneNumber(item['Phone'])) {
+            //     return res.status(400).send({ error: 'Valid phone number is required', status: 'BAD_REQUEST' });
+            // }
+
+            preparedData.push({
+                code: item['Code'],
+                email: item['Email'],
+                firstName: item['firstName'],
+                lastName: item['lastName'],
+                phoneNumber: item['Phone'],
+                dateOfBirth: item['DOB'],
+                roleId: 3
+            });
+        }
+
+        // Call the userService to import teachers
+        return await this.userService.importTeacher(preparedData);
+       // return res.status(200).send({ message: 'Teachers imported successfully' });
+
+    } catch (error) {
+       // return res.status(500).send({ error: error.message, status: 'INTERNAL_SERVER_ERROR' });
+    }
+}
+
 
   async getUserProfile(req, res) {
     try {

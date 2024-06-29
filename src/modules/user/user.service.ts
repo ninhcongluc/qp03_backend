@@ -237,6 +237,28 @@ export class UserService {
     }
   }
 
+  async importTeacher(preparedData) {
+    try {
+      console.log('preparedData', preparedData);
+      await Promise.all(
+        preparedData.map(async user => {
+          // Check if a user with the same email already exists
+          let existingUser = await this.userRepository.findOne({ where: { email: user.email } });
+          
+          if (!existingUser) {
+            // If the user does not exist, create a new user
+            existingUser = await this.userRepository.save(user);
+          }
+ 
+          return existingUser;
+        })
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
+
+  }
+
   async listStudentInClass(classId: string) {
     console.log('classId', classId);
     try {
@@ -315,4 +337,20 @@ export class UserService {
     }
     return arr.join('');
   }
+
+  validateEmail(email) {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  }
+
+  validatePhoneNumber(phoneNumber) {
+    const re = /^\d{10,11}$/;
+    return re.test(phoneNumber);
+  }
+
+  validateCode(code) {
+    const re = /^\d{4,}$/;
+    return re.test(code);
+  }
+
 }
