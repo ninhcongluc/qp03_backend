@@ -29,6 +29,12 @@ export class Quiz {
   timeLimitMinutes: number;
 
   @Column({ type: 'boolean', default: false })
+  isLimitedAttempts: boolean;
+
+  @Column({ type: 'integer', nullable: true })
+  maxAttempts: number;
+
+  @Column({ type: 'boolean', default: false })
   isHidden?: boolean;
 
   @Column({ type: 'timestamp', default: new Date() })

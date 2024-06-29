@@ -47,7 +47,7 @@ export class CourseService {
       if (semesterId) {
         queryBuilder.andWhere('course.semesterId = :semesterId', { semesterId: query.semesterId });
       }
-      queryBuilder.orderBy('course.createdAt', 'ASC');
+      queryBuilder.orderBy('course.createdAt', 'DESC');
       queryBuilder.skip((Number(page) - 1) * Number(limit));
       queryBuilder.take(Number(limit));
 
