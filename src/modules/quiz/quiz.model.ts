@@ -16,6 +16,9 @@ export class Quiz {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ type: 'boolean', default: false })
+  isActive: boolean;
+
   @Column({ type: 'timestamp', nullable: false })
   startDate: Date;
 
@@ -35,7 +38,7 @@ export class Quiz {
   maxAttempts: number;
 
   @Column({ type: 'boolean', default: false })
-  isHidden?: boolean;
+  showAnswer?: boolean;
 
   @Column({ type: 'timestamp', default: new Date() })
   createdAt: Date;

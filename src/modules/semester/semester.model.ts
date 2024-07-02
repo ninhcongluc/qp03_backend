@@ -8,6 +8,9 @@ export class Semester {
   @Column({ nullable: false })
   name: string;
 
+  @Column({ default: false })
+  isActive: boolean;
+
   @Column({
     type: 'timestamp',
     nullable: false

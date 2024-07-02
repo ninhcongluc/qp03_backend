@@ -16,20 +16,8 @@ export class QuizService {
       if (!classExisted) {
         throw new Error('Class not found');
       }
-      const startDate = new Date(data.startDate);
-      const endDate = new Date(data.endDate);
-      //   if (
-      //     startDate < classExisted.startDate ||
-      //     endDate > classExisted.endDate ||
-      //     startDate > classExisted.endDate ||
-      //     endDate > classExisted.startDate
-      //   ) {
-      //     throw new Error('Start date or end date is invalid');
-      //   }
-      const newQuiz = this.quizRepository.create({
-        ...data,
-        isActive: true
-      });
+
+      const newQuiz = this.quizRepository.create(data);
       return await this.quizRepository.save(newQuiz);
     } catch (error) {
       throw new Error(error);
@@ -42,7 +30,15 @@ export class QuizService {
       if (!classExisted) {
         throw new Error('Class not found');
       }
-      return await this.quizRepository.find({ where: { classId: String(classId) }, order: { createdAt: 'DESC' } });
+      return await this.quizRepository.find({ where: { classId: String(classId) }, order: { startDate: 'DESC' } });
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async detailQuiz(quizId: String) {
+    try {
+      return await this.quizRepository.findOne({ where: { id: String(quizId) } });
     } catch (error) {
       return error;
     }
@@ -78,7 +74,31 @@ export class QuizService {
       if (!quiz) {
         throw new Error('Quiz not found');
       }
-      return await this.quizRepository.update({ id }, data);
+      return await this.quizRepository.update(
+        { id },
+        {
+          ...data,
+          updatedAt: new Date()
+        }
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async setActiveQuiz(id: string) {
+    try {
+      const quiz = await this.quizRepository.findOne({ where: { id } });
+      if (!quiz) {
+        throw new Error('Quiz not found');
+      }
+      return await this.quizRepository.update(
+        { id },
+        {
+          isActive: !quiz.isActive,
+          updatedAt: new Date()
+        }
+      );
     } catch (error) {
       throw new Error(error);
     }
