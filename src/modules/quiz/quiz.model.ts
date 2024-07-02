@@ -2,6 +2,11 @@ import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'ty
 import { Class } from '../class/class.model';
 import { Question } from '../question/question.model';
 
+export enum QuizStatus {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted'
+}
+
 @Entity('quiz')
 export class Quiz {
   @PrimaryGeneratedColumn('uuid')
@@ -16,14 +21,17 @@ export class Quiz {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ type: 'boolean', default: false })
-  isActive: boolean;
+  @Column({ type: 'enum', enum: QuizStatus, default: QuizStatus.DRAFT })
+  status: QuizStatus;
 
   @Column({ type: 'timestamp', nullable: false })
   startDate: Date;
 
   @Column({ type: 'timestamp', nullable: false })
   endDate: Date;
+
+  @Column({ type: 'integer', nullable: false, default: 0 })
+  numberOfQuestions: number;
 
   @Column({ type: 'integer', default: 10 })
   score: number;

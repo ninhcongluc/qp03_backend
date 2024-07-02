@@ -62,11 +62,7 @@ quizRouter.put(
   }
 );
 
-quizRouter.put('/quiz/:id/set-active', (req: Request, res: Response) => {
-  return quizController.setActiveQuiz(req, res);
-});
-
-quizRouter.get('/quiz/:id/questions', (req: Request, res: Response) => {
+quizRouter.get('/quiz/:id/question-answers', (req: Request, res: Response) => {
   return quizController.listQuestionAnswers(req, res);
 });
 

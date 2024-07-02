@@ -86,28 +86,10 @@ export class QuizService {
     }
   }
 
-  async setActiveQuiz(id: string) {
-    try {
-      const quiz = await this.quizRepository.findOne({ where: { id } });
-      if (!quiz) {
-        throw new Error('Quiz not found');
-      }
-      return await this.quizRepository.update(
-        { id },
-        {
-          isActive: !quiz.isActive,
-          updatedAt: new Date()
-        }
-      );
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-
   async listQuestionAnswers(quizId: string) {
-    console.log('quizId', quizId);
     try {
       const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+      console.log(quiz);
       if (!quiz) {
         throw new Error('Quiz not found');
       }
@@ -115,7 +97,7 @@ export class QuizService {
         .createQueryBuilder('quiz')
         .leftJoinAndSelect('quiz.questions', 'question')
         .leftJoinAndSelect('question.answerOptions', 'answerOptions')
-        .where('question.quizId = :quizId', { quizId })
+        .where('quiz.id = :quizId', { quizId })
         .orderBy('question.createdAt', 'DESC')
         .getOne();
     } catch (error) {

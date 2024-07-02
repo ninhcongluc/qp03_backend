@@ -78,16 +78,6 @@ export class QuizController {
     }
   }
 
-  async setActiveQuiz(req: Request, res: Response) {
-    try {
-      const id = req.params.id;
-      await this.quizService.setActiveQuiz(id);
-      return res.status(200).send({ message: 'You have set successfully', status: StatusCodes.OK });
-    } catch (error) {
-      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
-    }
-  }
-
   async listQuestionAnswers(req: Request, res: Response) {
     try {
       const quizId = String(req.params.id);
