@@ -61,6 +61,75 @@ export class UserService {
     }
   }
 
+  async forgotPassword(email: string) {
+    try {
+      // find user with email
+      const user = await this.userRepository.findOne({ where: { email } });
+      // check user existed
+      if (!user) {
+        throw new Error('User not found');
+      }
+      // generate otp code with 5 characters (numbers, letters, special characters)
+      const otpCode = this.generateRandomOTP();
+      console.log('otpCode', otpCode);
+
+      // otpCode + otpExpiredAt (after 5 minutes) => save to user
+      const otpExpiredAt = new Date();
+      otpExpiredAt.setMinutes(otpExpiredAt.getMinutes() + 5);
+      await this.userRepository.update({ id: user.id }, { otpCode, otpExpiredAt });
+
+      // Send OTP code in email
+      const mailOptions = {
+        from: 'hongndhs171344@fpt.edu.vn',
+        to: email,
+        subject: 'Reset your password',
+        html: `
+        <div style="background-color: #f2f2f2; padding: 20px;">
+          <h2>Reset your password</h2>
+          <p>Please use the following OTP to reset your password:</p>
+          <h3>${otpCode}</h3>
+          <p>This OTP will expire in 5 minutes.</p>
+        </div>
+      `
+      };
+      await emailService.sendEmail(mailOptions);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async resetPassword(data: { email: string; otpCode: string; newPassword: string }) {
+    try {
+      const { email, otpCode, newPassword } = data;
+  
+      // Find user with email
+      const user = await this.userRepository.findOne({ where: { email } });
+      if (!user) {
+        throw new Error('User not found');
+      }
+  
+      // Check OTP code
+      if (user.otpCode !== otpCode) {
+        throw new Error('OTP code is incorrect');
+      }
+      if (user.otpExpiredAt < new Date()) {
+        throw new Error('OTP code is expired');
+      }
+  
+      // Validate newPassword length
+      if (newPassword.length < 8) {
+        throw new Error('Password must be at least 8 characters');
+      }
+  
+      // Update password
+      const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
+      const hashPassword = bcrypt.hashSync(newPassword, salt);
+      await this.userRepository.update({ id: user.id }, { password: hashPassword, otpCode: null, otpExpiredAt: null });
+      } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
   async changePassword(data) {
     try {
       const { email, oldPassword, newPassword, confirmPassword } = data;
@@ -103,38 +172,6 @@ export class UserService {
     }
   }
 
-  async forgotPassword(email: string) {
-    try {
-      // find user with email
-      const user = await this.userRepository.findOne({ where: { email } });
-      // check user existed
-      if (!user) {
-        throw new Error('User not found');
-      }
-      // generate otp code with 5 numbers
-      const otpCode = Math.floor(10000 + Math.random() * 90000).toString();
-      // otpCode + otpExpiredAt (after 5 minutes) => save to user
-      const otpExpiredAt = new Date();
-      otpExpiredAt.setMinutes(otpExpiredAt.getMinutes() + 5);
-      await this.userRepository.update({ id: user.id }, { otpCode, otpExpiredAt });
-
-      // send otp code to email
-      const mailOptions = {
-        from: 'hongndhs171344@fpt.edu.vn',
-        to: email,
-        subject: 'Your are invited to join Quiz Practice System',
-        html: `
-          <div style="background-color: #f2f2f2; padding: 20px;">
-        <h2>Welcome to Quiz Practice System</h2>
-        <p>Thank you for joining our platform. Here are your login details:</p>
-          </div>
-        `
-      };
-      await emailService.sendEmail(mailOptions);
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
 
   async getDetailUser(userId: string): Promise<User | null> {
     try {
@@ -305,6 +342,17 @@ export class UserService {
     password = this.shuffleString(password);
 
     return password;
+  }
+
+  generateRandomOTP(): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?';
+    const otpLength = 5;
+    let otp = '';
+    for (let i = 0; i < otpLength; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      otp += characters[randomIndex];
+    }
+    return otp;
   }
 
   shuffleString(str) {
