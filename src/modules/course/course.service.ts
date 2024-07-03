@@ -111,11 +111,6 @@ export class CourseService {
     }
   }
 
-
-
-
-  
-
   async getDetailCourse(classId: string, query) {
     try {
       const queryBuilder = this.courseRepository

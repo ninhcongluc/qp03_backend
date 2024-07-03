@@ -20,11 +20,22 @@ quizRouter.post(
   }
 );
 
+//list-the-quizzes-student
+quizRouter.get(
+  '/quiz',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    console.log('29')
+    return quizController.listStudentQuizzes(req, res);
+  }
+);
+
 //list-quiz by classId
 quizRouter.get(
-  '/quiz/:classId',
+  '/quiz',
   authentication,
-  authorization(['teacher', 'student']),
+  authorization(['teacher']),
   (req: Request, res: Response) => {
     return quizController.listQuiz(req, res);
   }

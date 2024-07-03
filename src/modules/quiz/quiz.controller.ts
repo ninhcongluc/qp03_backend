@@ -36,6 +36,17 @@ export class QuizController {
     }
   }
 
+  async listStudentQuizzes(req, res) {
+    try {
+      const classId = req.params.classId;
+      const userId = req.user._id;
+      const quizzes = await this.quizService.listStudentQuizzes(userId, req.query);
+      return res.status(200).send({ data: quizzes, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
   async detailQuiz(req: Request, res: Response) {
     try {
       const quizId = String(req.params.quizId);
