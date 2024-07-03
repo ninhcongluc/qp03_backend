@@ -1,4 +1,4 @@
-import { Request, Response, query } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { CourseService } from './course.service';
 
@@ -23,11 +23,12 @@ export class CourseController {
     }
   }
 
-  async getDetailCourse(req: Request, res: Response) {
+  
+  async listStudentCourses(req, res) {
     try {
-      const courseId = req.params.id;
-      const course = await this.courseService.getDetailCourse(courseId, req.query);
-      return res.status(200).send({ data: course, status: StatusCodes.OK });
+      const userId = req.user._id;
+      const courses = await this.courseService.listStudentCourses(userId, req.query);
+      return res.status(200).send({ data: courses, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }

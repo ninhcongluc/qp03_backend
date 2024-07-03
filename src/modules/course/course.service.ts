@@ -74,13 +74,66 @@ export class CourseService {
     }
   }
 
-  async getDetailCourse(courseId: string, query) {
+  async listStudentCourses(userId: string, query) {
+    try {
+      const { code, page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT, semesterId } = query;
+      const queryBuilder = this.courseRepository
+        .createQueryBuilder('course')
+        .leftJoinAndSelect('course.classes', 'class')
+        .leftJoinAndSelect('class.classParticipants', 'classParticipants')
+        .leftJoinAndSelect('course.semester', 'semester')
+        .where('classParticipants.userId = :userId and course.isActive = true', {
+          userId
+        });
+      if (code) {
+        queryBuilder.andWhere('course.code ILike :code', { code: `%${code}%` });
+      }
+
+      if (semesterId) {
+        queryBuilder.andWhere('course.semesterId = :semesterId', { semesterId: query.semesterId });
+      }
+      queryBuilder.orderBy('course.createdAt', 'DESC');
+      queryBuilder.skip((Number(page) - 1) * Number(limit));
+      queryBuilder.take(Number(limit));
+
+      const [courses, total] = await queryBuilder.getManyAndCount();
+      console.log('courses', courses);
+      const mappedCourses = courses.map(course => {
+       return {
+        id: course.id,
+        semesterId: course.semesterId,
+        code: course.code,
+        name: course.name,
+        description: course.description,
+        classId: course?.classes[0].id,
+        classCode: course?.classes[0].code,
+        className: course?.classes[0].name,
+        semester: course.semester
+       }
+      });
+
+      return {
+        page: Number(page),
+        total,
+        courses: mappedCourses
+      };
+    } catch (error) {
+      return error;
+    }
+  }
+
+
+
+
+  
+
+  async getDetailCourse(classId: string, query) {
     try {
       const queryBuilder = this.courseRepository
         .createQueryBuilder('course')
         .leftJoinAndSelect('course.classes', 'class')
         .leftJoinAndSelect('course.semester', 'semester')
-        .where('course.id = :courseId', { courseId });
+        .where('class.id = :classId', { classId });
 
       if (query.teacherId) {
         queryBuilder.andWhere('class.teacherId = :teacherId', { teacherId: query.teacherId });
