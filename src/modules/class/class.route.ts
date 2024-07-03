@@ -7,11 +7,12 @@ const classRouter = Router();
 const classService = new ClassService(AppDataSource);
 const classController = new ClassController(classService);
 
-classRouter.get('/listClassForTeacher/:teacherId', 
+classRouter.get('/listClassForTeacher/:teacherId',
     authentication,
     authorization(["teacher"]),
     (req: Request, res: Response) => {
         return classController.listClassForTeacher(req, res);
     });
+
 
 export default classRouter;
