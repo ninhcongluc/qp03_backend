@@ -14,6 +14,15 @@ const authSignIn = Joi.object().keys({
   password: Joi.string().required()
 });
 
+const updateProfile =Joi.object().keys({
+  firstName: Joi.string().optional(),
+  lastName: Joi.string().optional(),
+  dateOfBirth: Joi.date().optional(),
+  email: Joi.string().email().min(6).optional(),
+  phoneNumber: Joi.string().optional().allow(''),
+});
+
+
 const createManager = Joi.object().keys({
   email: Joi.string().email().min(6).required(),
   code: Joi.string().required(),
@@ -91,5 +100,6 @@ export default {
   '/semester/create': createSemester,
   '/course/create': createCourse,
   '/quiz/create': createQuiz,
-  '/quiz/update': updateQuiz
+  '/quiz/update': updateQuiz,
+  '/profile/editProfile':updateProfile,
 } as { [key: string]: ObjectSchema };

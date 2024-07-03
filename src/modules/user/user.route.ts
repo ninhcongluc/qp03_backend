@@ -89,6 +89,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+//Update Profile
+userRouter.put('/profile/updateProfile/:id', authentication, (req: Request, res: Response) => {
+  return userController.updateUserProfile(req, res);
+});
 // Endpoint to handle Excel file upload
 userRouter.post('/teacher/import-student/:classId', upload.single('file'), async (req, res) => {
   const classId = req.params.classId;

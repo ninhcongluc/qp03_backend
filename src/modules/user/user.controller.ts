@@ -6,6 +6,17 @@ import { AppObject } from '../../commons/consts/app.objects';
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
+  async updateUserProfile(req: Request, res: Response) {
+    try {
+      const userId = req.params.id;
+      const data = req.body;
+      const updatedUser = await this.userService.updateUserProfile(userId, data);
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+  
   async createManagerAccount(req: Request, res: Response) {
     try {
       const newUser = await this.userService.createManagerAccount(req.body);
@@ -115,6 +126,7 @@ export class UserController {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
     }
   }
+
 
   async listStudentInClass(req: Request, res: Response) {
     try {

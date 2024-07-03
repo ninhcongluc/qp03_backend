@@ -17,6 +17,26 @@ export class UserService {
     this.classParticipantsRepository = this.dataSource.getRepository(ClassParticipants);
   }
 
+  async updateUserProfile(userId: string, data) {
+    try {
+      // Find the user by their ID
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+       
+      // If the user doesn't exist, throw an error
+      if (!user) {
+        throw new Error('User not found');
+      }
+  
+      // Update the user's profile with the provided data
+      await this.userRepository.update({ id: userId }, data);
+  
+      // Return the updated user
+      return await this.userRepository.findOne({ where: { id: userId } });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async createManagerAccount(data) {
     try {
       const email = data.email;
