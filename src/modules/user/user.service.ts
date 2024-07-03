@@ -2,7 +2,7 @@ import { DataSource, In, Repository } from 'typeorm';
 import { User } from '../user/user.model';
 import { AppObject } from '../../commons/consts/app.objects';
 import * as bcrypt from 'bcrypt';
-import { exist } from 'joi';
+import { exist, string } from 'joi';
 import { ClassParticipants } from '../class_participants/class-participants.model';
 
 const EmailService = require('../../configs/send-mail');
@@ -109,7 +109,12 @@ export class UserService {
 
   async listAccountByRole(roleId: number) {
     try {
-      return await this.userRepository.find({ where: { roleId, isDeleted: false } });
+      return await this.userRepository.find({ 
+        where: { roleId, isDeleted: false },
+        order: {
+          firstName: 'DESC'
+        } 
+      });
     } catch (error) {
       return error;
     }
@@ -189,33 +194,49 @@ export class UserService {
       throw new Error(error);
     }
   }
-
-  async listTeacherAccounts(): Promise<User[]> {
+  //teacher routes
+  async createTeacherAccount(data) {
     try {
-      return await this.userRepository.find({ where: { roleId: AppObject.ROLE_CODE.TEACHER } });
+      const email = data.email;
+      const userExisted = await this.userRepository.findOne({ where: { email } });
+      if (userExisted) {
+        throw new Error('Email already exists');
+      }
+      const code = data.code;
+      const codeExisted = await this.userRepository.findOne({ where: { code } });
+      if (codeExisted) {
+        throw new Error('Code already exists');
+      }
+      const newUser = this.userRepository.create({
+        ...data,
+        roleId: 3,
+        isActive: false
+      });
+      return await this.userRepository.save(newUser);
     } catch (error) {
       throw new Error(error);
     }
   }
-
+  
   async getTeacherDetails(userId: string): Promise<User | null> {
     try {
-      return await this.userRepository.findOne({
-        where: { id: userId, roleId: AppObject.ROLE_CODE.TEACHER },
-        relations: ['courses']
-      });
+      return await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.class', 'class')
+        .where('user.id = :userId', { userId })
+        .getOne();
     } catch (error) {
       throw new Error(error);
     }
   }
 
-  async deleteTeacherAccount(id) {
+  async deleteTeacherAccount(teacherId) {
     try {
-      const user = await this.userRepository.findOne({ where: { id, roleId: AppObject.ROLE_CODE.TEACHER } });
-      if (!user) {
-        throw new Error('Teacher not found');
+      const user = await this.userRepository.findOne({ where: { id: teacherId } });
+      if (user.isActive) {
+        throw new Error('Teacher is active, cannot delete');
       }
-      await this.userRepository.delete({ id });
+      await this.userRepository.delete({ id: teacherId });
     } catch (error) {
       throw new Error(error);
     }
@@ -261,15 +282,17 @@ export class UserService {
     try {
       console.log('preparedData', preparedData);
       await Promise.all(
-        preparedData.map(async user => {
+        preparedData.map(async (user: User) => {
           // Check if a user with the same email already exists
           let existingUser = await this.userRepository.findOne({ where: { email: user.email } });
-          
-          if (!existingUser) {
+          // Check if a user with the same code already exists
+          const existingCode = await this.userRepository.findOne({ where: { code: user.code } });
+
+          if (!existingUser && !existingCode) {
             // If the user does not exist, create a new user
             existingUser = await this.userRepository.save(user);
           }
- 
+
           return existingUser;
         })
       );
@@ -296,14 +319,29 @@ export class UserService {
 
   async updateTeacherAccount(id, data) {
     try {
-      const user = await this.userRepository.findOne({ where: { id, roleId: AppObject.ROLE_CODE.TEACHER } });
+      const user = await this.userRepository.findOne({ where: { id } });
       if (!user) {
-        throw new Error('Teacher not found');
+        throw new Error('User not found');
+      }
+
+      if(await this.checkUserIsUsed(id) && !data.isActive){
+        throw new Error('Teacher account is used in class');
       }
       return await this.userRepository.update({ id }, data);
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async checkUserIsUsed(userId: string): Promise<boolean> {
+    //const isUsed = await this
+    const isUsed = await this.dataSource
+    .getRepository('class')
+    .createQueryBuilder('class')
+    .where('class.teacherId = :userId', { userId })
+    .getOne();
+    
+    return isUsed ? true : false;
   }
 
   async getUserByEmail(email: string): Promise<User | null> {

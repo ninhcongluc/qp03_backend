@@ -25,7 +25,7 @@ const updateProfile =Joi.object().keys({
 
 const createManager = Joi.object().keys({
   email: Joi.string().email().min(6).required(),
-  code: Joi.string().required(),
+  code: Joi.string().min(1).required(),
   firstName: Joi.string().optional().allow(''),
   lastName: Joi.string().optional().allow(''),
   isActive: Joi.boolean().optional(),
@@ -36,7 +36,7 @@ const createManager = Joi.object().keys({
 
 const updateManager = Joi.object().keys({
   email: Joi.string().email().min(6).optional(),
-  code: Joi.string().optional(),
+  code: Joi.string().min(1).optional(),
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),
   gender: Joi.number().optional(),
@@ -52,11 +52,11 @@ const createSemester = Joi.object().keys({
 });
 
 const createCourse = Joi.object().keys({
+  managerId: Joi.string().required(),
   semesterId: Joi.string().required(),
   code: Joi.string().required(),
   name: Joi.string().required(),
   description: Joi.string().optional(),
-  isActive: Joi.boolean().optional()
 });
 
 const updateCourse = Joi.object().keys({
@@ -102,4 +102,5 @@ export default {
   '/quiz/create': createQuiz,
   '/quiz/update': updateQuiz,
   '/profile/editProfile':updateProfile,
+  '/course/update': updateCourse, 
 } as { [key: string]: ObjectSchema };

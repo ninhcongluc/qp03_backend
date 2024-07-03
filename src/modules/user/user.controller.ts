@@ -74,6 +74,16 @@ export class UserController {
     }
   }
 
+  //teacher routes
+  async createTeacherAccount(req: Request, res: Response) {
+    try {
+      const newUser = await this.userService.createTeacherAccount(req.body);
+      return res.status(201).send({ data: newUser, status: StatusCodes.CREATED });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
   async listTeacherAccount(req: Request, res: Response) {
     try {
       const users = await this.userService.listAccountByRole(AppObject.ROLE_CODE.TEACHER);
@@ -85,8 +95,8 @@ export class UserController {
 
   async deleteTeacherAccount(req: Request, res: Response) {
     try {
-      const id = req.params.id;
-      const newUser = await this.userService.deleteTeacherAccount(id);
+      const teacherId = req.params.id;
+      const newUser = await this.userService.deleteTeacherAccount(teacherId);
       return res.status(201).send({ data: newUser, status: StatusCodes.CREATED });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
@@ -98,6 +108,16 @@ export class UserController {
       const id = req.params.id;
       const updatedUser = await this.userService.updateTeacherAccount(id, req.body);
       return res.status(201).send({ data: updatedUser, status: StatusCodes.CREATED });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getTeacherDetails(req: Request, res: Response) {
+    try {
+      const userId = req.params.id;
+      const user = await this.userService.getTeacherDetails(userId);
+      return res.status(200).send({ data: user, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
@@ -137,6 +157,7 @@ export class UserController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
   async importStudent(data, classId) {
     console.log(data);
     const preparedData = data.map(item => {
@@ -191,7 +212,6 @@ export class UserController {
        // return res.status(500).send({ error: error.message, status: 'INTERNAL_SERVER_ERROR' });
     }
 }
-
 
   async getUserProfile(req, res) {
     try {

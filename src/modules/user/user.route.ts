@@ -49,6 +49,17 @@ userRouter.delete('/manager/:id', authentication, authorization(['admin']), (req
   return userController.deleteManagerAccount(req, res);
 });
 
+//teacher routes
+userRouter.post(
+  '/teacher/create',
+  authentication,
+  authorization(['manager']),
+  schemaValidator('/manager/create'),
+  (req: Request, res: Response) => {
+    return userController.createTeacherAccount(req, res);
+  }
+);
+
 userRouter.get('/teacher/list', authentication, (req: Request, res: Response) => {
   return userController.listTeacherAccount(req, res);
 });
@@ -69,6 +80,10 @@ userRouter.delete('/teacher/:id', authentication, authorization(['manager']), (r
 
 userRouter.get('/teacher/:id', authentication, authorization(['manager', 'teacher']), (req: Request, res: Response) => {
   return userController.getDetailUser(req, res);
+});
+
+userRouter.get('/teacher-details/:id', authentication, authorization(['manager', 'teacher']), (req: Request, res: Response) => {
+  return userController.getTeacherDetails(req, res);
 });
 
 const uploadDir = path.join('src', 'uploads');

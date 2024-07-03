@@ -39,7 +39,7 @@ export class SemesterService {
 
       const newSemester = this.semesterRepository.create({
         ...data,
-        isActive: true
+        isActive: false
       });
       return await this.semesterRepository.save(newSemester);
     } catch (error) {
@@ -49,7 +49,11 @@ export class SemesterService {
 
   async listSemester() {
     try {
-      return await this.semesterRepository.find();
+      return await this.semesterRepository.find({
+        order: {
+          startDate: 'DESC'
+        }
+      });
     } catch (error) {
       throw new Error(error);
     }
@@ -57,10 +61,7 @@ export class SemesterService {
 
   async deleteSemester(semesterId: string) {
     try {
-      const isSemesterUsed = await this.checkSemesterIsUsed(semesterId);
-      if (isSemesterUsed) {
-        throw new Error('Semester is used in course');
-      }
+      
       const semester = await this.semesterRepository.findOne({
         where: {
           id: semesterId
@@ -69,6 +70,9 @@ export class SemesterService {
       if (!semester) {
         throw new Error('Semester is not exist');
       }
+      if(semester.isActive){
+          throw new Error('Semester is active');
+      }
 
       return await this.semesterRepository.delete(semesterId);
     } catch (error) {
@@ -76,7 +80,20 @@ export class SemesterService {
     }
   }
 
-  async checkSemesterIsUsed(semesterId: string) {
+  async updateSemester(semesterId: string, data) {
+    try{
+      const isSemesterUsed = await this.checkSemesterIsUsed(semesterId);
+      if (isSemesterUsed && data.isActive === false) {
+        throw new Error('Semester is used in course');
+      }
+
+      return await this.semesterRepository.update(semesterId, data);
+    }catch(error){
+      throw new Error(error);
+    }
+  }
+
+  async checkSemesterIsUsed(semesterId: string): Promise<boolean> {
     // kiểm tra xem semester có được sử dụng trong course không
     const course = await this.dataSource
       .getRepository('course')

@@ -32,4 +32,14 @@ export class SemesterController {
             return res.status(400).send({error: error.message, status: StatusCodes.BAD_REQUEST});
         }
     }
+
+    async updateSemester(req: Request, res: Response) {
+        try {
+            const semesterId = req.params.id;
+            const result = await this.semesterService.updateSemester(semesterId, req.body);
+            return res.status(200).send({data: result, status: StatusCodes.OK});
+        } catch (error) {
+            return res.status(400).send({error: error.message, status: StatusCodes.BAD_REQUEST});
+        }
+    }
 }
