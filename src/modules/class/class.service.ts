@@ -60,7 +60,25 @@ export class ClassService {
 
     async updateClass(classId: String, data: Class) {
         try {
-            await this.classRepository.update({ id: String(classId) }, data);
+            const startDate = new Date(data.startDate);
+            const endDate = new Date(data.endDate);
+            
+            const timeClass = endDate.getTime() - startDate.getTime();
+            const minDuration = 40 * 24 * 60 * 60 * 1000;
+            if(timeClass < minDuration){
+                throw new Error('Class must last at least 40 days');
+            }
+
+            if(!await this.checkTimeClass(startDate, endDate, data.courseId)){
+                throw new Error('Class is overlapping with another class');
+            }
+
+            if((await this.checkClassIsUsed(classId) 
+                || await this.checkClassHaveQuiz(classId)) 
+                && data.isActive === false){
+                throw new Error('Class is used in system');
+            }
+            return await this.classRepository.update({ id: String(classId) }, data);
         } catch (error) {
             throw new Error(error);
         }
@@ -76,7 +94,7 @@ export class ClassService {
             if(await this.checkClassIsUsed(classId) || await this.checkClassHaveQuiz(classId)){
                 throw new Error('Class is used in system');
             }
-            
+
             return await this.classRepository.delete({ id: String(classId) });
         } catch (error) {
             throw new Error(error);

@@ -36,6 +36,7 @@ classRouter.get('/listClass/:courseId',
 classRouter.put('/updateClass/:classId',
   authentication,
   authorization(['manager']),
+  schemaValidator('/class/update'),
   (req: Request, res: Response) => {
     return classController.updateClass(req, res);
   });
@@ -50,9 +51,9 @@ classRouter.delete(
 );
 
 classRouter.get(
-  'viewClassDetail/:classId',
+  '/viewClassDetail/:classId',
   authentication,
-  authorization(['manager', 'teacher', 'student']),
+  authorization(['manager']),
   (req: Request, res: Response) => {
     return classController.viewClassDetails(req, res);
   }

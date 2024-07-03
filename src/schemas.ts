@@ -93,6 +93,17 @@ const createClass = Joi.object().keys({
   endDate: Joi.date().required(),
 });
 
+const updateClass = Joi.object().keys({
+  courseId: Joi.string().optional(),
+  teacherId: Joi.string().optional(),
+  code: Joi.string().optional(),
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  startDate: Joi.date().optional(),
+  endDate: Joi.date().optional(),
+  isActive: Joi.boolean().optional()
+});
+
 export default {
   '/auth/signIn': authSignIn,
   '/auth/signUp': authSignUp,
@@ -104,4 +115,5 @@ export default {
   '/quiz/update': updateQuiz,
   '/course/update': updateCourse, 
   '/class/create': createClass,
+  '/class/update': updateClass
 } as { [key: string]: ObjectSchema };
