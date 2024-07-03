@@ -83,6 +83,16 @@ const updateQuiz = Joi.object().keys({
   showAnswer: Joi.boolean().optional()
 });
 
+const createClass = Joi.object().keys({
+  courseId: Joi.string().required(),
+  teacherId: Joi.string().required(),
+  code: Joi.string().required(),
+  name: Joi.string().required(),
+  description: Joi.string().optional(),
+  startDate: Joi.date().required(),
+  endDate: Joi.date().required(),
+});
+
 export default {
   '/auth/signIn': authSignIn,
   '/auth/signUp': authSignUp,
@@ -93,4 +103,5 @@ export default {
   '/quiz/create': createQuiz,
   '/quiz/update': updateQuiz,
   '/course/update': updateCourse, 
+  '/class/create': createClass,
 } as { [key: string]: ObjectSchema };

@@ -109,7 +109,7 @@ export class CourseService {
         classCode: course?.classes[0].code,
         className: course?.classes[0].name,
         semester: course.semester
-       }
+       };
       });
 
       return {
@@ -121,11 +121,6 @@ export class CourseService {
       return error;
     }
   }
-
-
-
-
-  
 
   async getDetailCourse(classId: string, query) {
     try {
