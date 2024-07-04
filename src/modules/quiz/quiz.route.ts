@@ -22,7 +22,7 @@ quizRouter.post(
 
 //list-the-quizzes-student
 quizRouter.get(
-  '/student/course-management/class/:classId/quiz',
+  '/student/course-management/class/:classId',
   authentication,
   authorization(['student']),
   (req: Request, res: Response) => {

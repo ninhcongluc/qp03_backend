@@ -2,8 +2,6 @@ import { DataSource, Repository } from 'typeorm';
 import { Quiz } from './quiz.model';
 import { Class } from '../class/class.model';
 import { AppObject } from '../../commons/consts/app.objects';
-import { Question } from '../question/question.model';
-import { Semester } from '../semester/semester.model';
 
 export class QuizService {
   private quizRepository: Repository<Quiz>;
@@ -38,25 +36,24 @@ export class QuizService {
     }
   }
 
-  async listStudentQuizzes(userId: string, query) {
+  async listStudentQuizzes(userId: string, classId: string, query) {
     try {
       const { page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT, name = "" } = query;
       const queryBuilder = this.quizRepository
         .createQueryBuilder('quiz')
         .leftJoinAndSelect('quiz.class', 'class')
         .leftJoinAndSelect('class.classParticipants', 'classParticipants')
-        .where('classParticipants.userId = :userId AND quiz.classId = :classId', { userId });
-
+        .where('classParticipants.userId = :userId AND quiz.classId = :classId', { userId, classId });
+  
       if (name) {
         queryBuilder.andWhere('quiz.name LIKE :name', { name: `%${name}%` });
       }
-
+  
       queryBuilder.orderBy('quiz.createdAt', 'DESC');
       queryBuilder.skip((Number(page) - 1) * Number(limit));
       queryBuilder.take(Number(limit));
-
+  
       const [quizzes, total] = await queryBuilder.getManyAndCount();
-      console.log('quizzes', quizzes);
       const mappedQuizzes = quizzes.map(quiz => ({
         id: quiz.id,
         name: quiz.name,
@@ -64,7 +61,7 @@ export class QuizService {
         startDate: quiz.startDate,
         endDate: quiz.endDate
       }));
-
+  
       return {
         page: Number(page),
         total,
