@@ -36,6 +36,23 @@ export class QuizController {
     }
   }
 
+  async listStudentQuizzes(req, res) {
+    try {
+      const classId = req.params.classId;
+      const userId = req.user._id;
+      const { type } = req.query;
+
+      if (type === 'quizzes') {
+        const quizzes = await this.quizService.listStudentQuizzes(userId, classId, req.query);
+        return res.status(200).send({ data: quizzes, status: StatusCodes.OK });
+      } else {
+        return res.status(400).send({ error: 'Invalid type parameter', status: StatusCodes.BAD_REQUEST });
+      }
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
   async detailQuiz(req: Request, res: Response) {
     try {
       const quizId = String(req.params.quizId);

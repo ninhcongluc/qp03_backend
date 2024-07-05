@@ -20,11 +20,21 @@ quizRouter.post(
   }
 );
 
+//list-the-quizzes-student
+quizRouter.get(
+  '/student/course-management/class/:classId',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.listStudentQuizzes(req, res);
+  }
+);
+
 //list-quiz by classId
 quizRouter.get(
-  '/quiz/:classId',
+  '/quiz',
   authentication,
-  authorization(['teacher', 'student']),
+  authorization(['teacher']),
   (req: Request, res: Response) => {
     return quizController.listQuiz(req, res);
   }
