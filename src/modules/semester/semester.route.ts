@@ -25,4 +25,8 @@ semesterRouter.delete('/semester/:id', authentication, authorization(['manager']
   return semesterController.deleteSemester(req, res);
 });
 
+semesterRouter.put('/semester/:id', authentication, authorization(['manager']), (req: Request, res: Response) => {
+  return semesterController.updateSemester(req, res);
+});
+
 export default semesterRouter;
