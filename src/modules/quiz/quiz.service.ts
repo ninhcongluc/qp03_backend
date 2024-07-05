@@ -1,9 +1,11 @@
 import { DataSource, Repository } from 'typeorm';
 import { Quiz } from './quiz.model';
 import { Class } from '../class/class.model';
+import { AppObject } from '../../commons/consts/app.objects';
 import { Question } from '../question/question.model';
 import { AnswerOption } from '../answer_option/answer-option.model';
 import { QuestionBank } from '../question_bank/question_bank.model';
+
 
 export class QuizService {
   private quizRepository: Repository<Quiz>;
@@ -41,6 +43,42 @@ export class QuizService {
       return await this.quizRepository.find({ where: { classId: String(classId) }, order: { startDate: 'DESC' } });
     } catch (error) {
       return error;
+    }
+  }
+
+  async listStudentQuizzes(userId: string, classId: string, query) {
+    try {
+      const { page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT, name = "" } = query;
+      const queryBuilder = this.quizRepository
+        .createQueryBuilder('quiz')
+        .leftJoinAndSelect('quiz.class', 'class')
+        .leftJoinAndSelect('class.classParticipants', 'classParticipants')
+        .where('classParticipants.userId = :userId AND quiz.classId = :classId', { userId, classId });
+  
+      if (name) {
+        queryBuilder.andWhere('quiz.name LIKE :name', { name: `%${name}%` });
+      }
+  
+      queryBuilder.orderBy('quiz.startDate', 'ASC');
+      queryBuilder.skip((Number(page) - 1) * Number(limit));
+      queryBuilder.take(Number(limit));
+  
+      const [quizzes, total] = await queryBuilder.getManyAndCount();
+      const mappedQuizzes = quizzes.map(quiz => ({
+        id: quiz.id,
+        name: quiz.name,
+        description: quiz.description,
+        startDate: quiz.startDate,
+        endDate: quiz.endDate
+      }));
+  
+      return {
+        page: Number(page),
+        total,
+        quizzes: mappedQuizzes
+      };
+    } catch (error) {
+      throw new Error(error);
     }
   }
 
