@@ -22,7 +22,6 @@ courseRouter.get(
   authentication,
   authorization(['student']),
   (req: Request, res: Response) => {
-    console.log('23');
     return courseController.listStudentCourses(req, res);
   }
 );
@@ -30,7 +29,6 @@ courseRouter.get(
 courseRouter.get('/course', (req: Request, res: Response) => {
   return courseController.listCourse(req, res);
 });
-
 
 courseRouter.put('/course/:id', schemaValidator('/course/update'), (req: Request, res: Response) => {
   return courseController.updateCourse(req, res);

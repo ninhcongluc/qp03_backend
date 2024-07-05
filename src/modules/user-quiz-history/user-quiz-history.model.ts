@@ -3,8 +3,8 @@ import { Quiz } from '../quiz/quiz.model';
 import { User } from '../user/user.model';
 import { AnswerOption } from '../answer_option/answer-option.model';
 
-@Entity('user_quiz_history')
-export class UserQuizHistory {
+@Entity('student_quiz_history')
+export class StudentQuizHistory {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
@@ -15,7 +15,10 @@ export class UserQuizHistory {
   quizId: string;
 
   @Column({ type: 'uuid' })
-  answerOptionId: string;
+  questionId: string;
+
+  @Column()
+  answerOptionIds: string[];
 
   @Column({
     type: 'timestamp',

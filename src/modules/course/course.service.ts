@@ -25,7 +25,7 @@ export class CourseService {
       if (course) {
         throw new Error('You can not create duplicate course in a semester');
       }
-      if (!await this.checkSemesterStart(data.semesterId)) {
+      if (!(await this.checkSemesterStart(data.semesterId))) {
         throw new Error('Semester started, can not create course in this semester');
       }
 
@@ -99,17 +99,17 @@ export class CourseService {
       const [courses, total] = await queryBuilder.getManyAndCount();
       console.log('courses', courses);
       const mappedCourses = courses.map(course => {
-       return {
-        id: course.id,
-        semesterId: course.semesterId,
-        code: course.code,
-        name: course.name,
-        description: course.description,
-        classId: course?.classes[0].id,
-        classCode: course?.classes[0].code,
-        className: course?.classes[0].name,
-        semester: course.semester
-       }
+        return {
+          id: course.id,
+          semesterId: course.semesterId,
+          code: course.code,
+          name: course.name,
+          description: course.description,
+          classId: course?.classes[0].id,
+          classCode: course?.classes[0].code,
+          className: course?.classes[0].name,
+          semester: course.semester
+        };
       });
 
       return {
@@ -191,7 +191,7 @@ export class CourseService {
       .where('semester.id = :semesterId', { semesterId })
       .andWhere('semester.startDate > :currentDate', { currentDate: new Date() })
       .getOne();
-  
+
     return semester ? true : false;
-  }  
+  }
 }
