@@ -28,9 +28,7 @@ courseRouter.get('/course', (req: Request, res: Response) => {
   return courseController.listCourse(req, res);
 });
 
-courseRouter.get('/course/class/:classId', (req: Request, res: Response) => {
-  return courseController.getDetailCourse(req, res);
-});
+
 
 courseRouter.put('/course/:id', schemaValidator('/course/update'),(req: Request, res: Response) => {
   return courseController.updateCourse(req, res);

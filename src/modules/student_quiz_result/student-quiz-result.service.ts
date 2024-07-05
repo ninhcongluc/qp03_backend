@@ -1,7 +1,8 @@
-import { DataSource, Repository } from 'typeorm';
-import { StudentQuizResult } from './student-quiz-result.model';
-import { Quiz } from '../quiz/quiz.model';
-import { User } from '../user/user.model';
+import { DataSource, Repository } from "typeorm";
+import { StudentQuizResult } from "./student-quiz-result.model";
+import { Class } from "../class/class.model";
+import { Quiz } from "../quiz/quiz.model";
+import { AppObject } from "../../commons/consts/app.objects";
 
 export class StudentQuizResultService {
   private studentQuizResultRepository: Repository<StudentQuizResult>;
@@ -10,54 +11,112 @@ export class StudentQuizResultService {
     this.studentQuizResultRepository = this.dataSource.getRepository(StudentQuizResult);
   }
 
-  async createStudentQuizResult(data: any) {
+  async listStudentQuizResultHistory(userId: string, classId: string, quizId: string, query: { page?: number; limit?: number; name?: string }) {
     try {
-      const quizExisted = await this.dataSource.getRepository(Quiz).findOne({ where: { id: String(data.quizId) } });
+      const { page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT } = query;
+
+      const classExisted = await this.dataSource.getRepository(Class).findOne({ where: { id: String(classId) } });
+      if (!classExisted) {
+        throw new Error('Class not found');
+      }
+
+      const quizExisted = await this.dataSource.getRepository(Quiz).findOne({ where: { id: String(quizId) } });
       if (!quizExisted) {
         throw new Error('Quiz not found');
       }
 
-      const studentExisted = await this.dataSource.getRepository(User).findOne({ where: { id: String(data.studentId) } });
-      if (!studentExisted) {
-        throw new Error('Student not found');
-      }
+      const queryBuilder = this.studentQuizResultRepository
+        .createQueryBuilder('result')
+        .leftJoinAndSelect('result.quiz', 'quiz')
+        .where('result.userId = :userId AND result.classId = :classId AND result.quizId = :quizId', { userId, classId, quizId });
 
-      const newResult = this.studentQuizResultRepository.create(data);
-      return await this.studentQuizResultRepository.save(newResult);
+      queryBuilder.orderBy('result.createdAt', 'DESC');
+      queryBuilder.skip((Number(page) - 1) * Number(limit));
+      queryBuilder.take(Number(limit));
+
+      const [results, total] = await queryBuilder.getManyAndCount();
+
+      return {
+        page: Number(page),
+        total,
+        results
+      };
     } catch (error) {
-      throw new Error(error.message);
+      throw new Error('Failed to list student quiz results history: ' + error.message);
     }
   }
 
-  async listStudentQuizResults(studentId: string) {
+  async getReviewQuiz(userId: string, classId: string, quizId: string, query: { page?: number; limit?: number }) {
     try {
-      const studentExisted = await this.dataSource.getRepository(User).findOne({ where: { id: String(studentId) } });
-      if (!studentExisted) {
-        throw new Error('Student not found');
+      const { page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT } = query;
+
+      const classExisted = await this.dataSource.getRepository(Class).findOne({ where: { id: String(classId) } });
+      if (!classExisted) {
+        throw new Error('Class not found');
       }
 
-      return await this.studentQuizResultRepository.find({
-        where: { studentId: String(studentId) },
-        relations: ['quiz'],
-        order: { submissionTime: 'DESC' },
-      });
+      const quizExisted = await this.dataSource.getRepository(Quiz).findOne({ where: { id: String(quizId) } });
+      if (!quizExisted) {
+        throw new Error('Quiz not found');
+      }
+
+      const queryBuilder = this.studentQuizResultRepository
+        .createQueryBuilder('result')
+        .leftJoinAndSelect('result.quiz', 'quiz')
+        .leftJoinAndSelect('quiz.questions', 'questions')
+        .leftJoinAndSelect('questions.answerOptions', 'answerOptions')
+        .where('result.userId = :userId AND result.classId = :classId AND result.quizId = :quizId', { userId, classId, quizId });
+
+      queryBuilder.orderBy('questions.createdAt', 'ASC');
+      queryBuilder.skip((Number(page) - 1) * Number(limit));
+      queryBuilder.take(Number(limit));
+
+      const [results, total] = await queryBuilder.getManyAndCount();
+
+      return {
+        page: Number(page),
+        total,
+        results
+      };
     } catch (error) {
-      throw new Error(error.message);
+      throw new Error('Failed to get quiz review: ' + error.message);
     }
   }
 
-  async detailStudentQuizResult(resultId: string) {
+  async getDoQuiz(userId: string, classId: string, quizId: string, query: { page?: number; limit?: number }) {
     try {
-      const result = await this.studentQuizResultRepository.findOne({
-        where: { id: String(resultId) },
-        relations: ['quiz'],
-      });
-      if (!result) {
-        throw new Error('Result not found');
+      const { page = AppObject.DEFAULT_PAGE, limit = AppObject.DEFAULT_LIMIT } = query;
+
+      const classExisted = await this.dataSource.getRepository(Class).findOne({ where: { id: String(classId) } });
+      if (!classExisted) {
+        throw new Error('Class not found');
       }
-      return result;
+
+      const quizExisted = await this.dataSource.getRepository(Quiz).findOne({ where: { id: String(quizId) } });
+      if (!quizExisted) {
+        throw new Error('Quiz not found');
+      }
+
+      const queryBuilder = this.studentQuizResultRepository
+        .createQueryBuilder('result')
+        .leftJoinAndSelect('result.quiz', 'quiz')
+        .leftJoinAndSelect('quiz.questions', 'questions')
+        .leftJoinAndSelect('questions.answerOptions', 'answerOptions')
+        .where('result.userId = :userId AND result.classId = :classId AND result.quizId = :quizId', { userId, classId, quizId });
+
+      queryBuilder.orderBy('questions.createdAt', 'ASC');
+      queryBuilder.skip((Number(page) - 1) * Number(limit));
+      queryBuilder.take(Number(limit));
+
+      const [results, total] = await queryBuilder.getManyAndCount();
+
+      return {
+        page: Number(page),
+        total,
+        results
+      };
     } catch (error) {
-      throw new Error(error.message);
+      throw new Error('Failed to get quiz details: ' + error.message);
     }
   }
 }
