@@ -49,7 +49,7 @@ export class QuizService {
         queryBuilder.andWhere('quiz.name LIKE :name', { name: `%${name}%` });
       }
   
-      queryBuilder.orderBy('quiz.createdAt', 'DESC');
+      queryBuilder.orderBy('quiz.startDate', 'ASC');
       queryBuilder.skip((Number(page) - 1) * Number(limit));
       queryBuilder.take(Number(limit));
   
