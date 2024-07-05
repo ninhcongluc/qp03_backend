@@ -24,6 +24,12 @@ courseRouter.get('/course/student-courses', authentication,
   return courseController.listStudentCourses(req, res);
 });
 
+courseRouter.get('/course/student-courses/class/:classId',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+      return courseController.getCourseByClassId(req, res);
+  });
 courseRouter.get('/course', (req: Request, res: Response) => {
   return courseController.listCourse(req, res);
 });

@@ -39,6 +39,17 @@ export class CourseService {
       throw new Error(error);
     }
   }
+  async getCourseByClassId(classId: string) {
+    try {
+        return await this.courseRepository
+            .createQueryBuilder("course")
+            .innerJoinAndSelect("course.classes", "class", "class.id = :classId", { classId })
+            .getOne();
+    } catch (error) {
+        throw new Error(`Failed to get course for classId ${classId}: ${error.message}`);
+    }
+}
+
 
   async listCourse(query) {
     try {
