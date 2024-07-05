@@ -12,7 +12,7 @@ export class AnswerOption {
   @Column({ nullable: false })
   optionText: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: false })
   isCorrect: boolean;
 
   @Column({ type: 'timestamp', default: new Date() })

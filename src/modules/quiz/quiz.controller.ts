@@ -87,4 +87,15 @@ export class QuizController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
+  async saveAsDraft(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const result = await this.quizService.saveAsDraft(id, req.body);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
 }
