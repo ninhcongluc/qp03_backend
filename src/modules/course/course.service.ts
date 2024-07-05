@@ -122,13 +122,13 @@ export class CourseService {
     }
   }
 
-  async getDetailCourse(classId: string, query) {
+  async getDetailCourse(courseId: string, query) {
     try {
       const queryBuilder = this.courseRepository
         .createQueryBuilder('course')
         .leftJoinAndSelect('course.classes', 'class')
         .leftJoinAndSelect('course.semester', 'semester')
-        .where('class.id = :classId', { classId });
+        .where('course.id = :courseId', { courseId });
 
       if (query.teacherId) {
         queryBuilder.andWhere('class.teacherId = :teacherId', { teacherId: query.teacherId });
