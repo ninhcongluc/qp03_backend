@@ -18,8 +18,8 @@ export class ClassController {
 
     // manager class
     async listClass(req: Request, res: Response) {
-        const courseId = String(req.params.courseId);
         try {
+            const courseId = String(req.params.id);
             const classes = await this.classService.listClass(courseId);
             return res.status(200).send({ data: classes, status: StatusCodes.OK });
         } catch (error) {
@@ -37,7 +37,7 @@ export class ClassController {
     }
     
     async updateClass(req: Request, res: Response) {
-        const classId = String(req.params.classId);
+        const classId = String(req.params.id);
         try {
             await this.classService.updateClass(classId, req.body);
             return res.status(200).send({ message: "Update class successfully", status: StatusCodes.OK });
@@ -47,7 +47,7 @@ export class ClassController {
     }
 
     async deleteClass(req: Request, res: Response) {
-        const classId = String(req.params.classId);
+        const classId = String(req.params.id);
         try {
             await this.classService.deleteClass(classId);
             return res.status(200).send({ message: "Delete class successfully", status: StatusCodes.OK });
@@ -57,7 +57,7 @@ export class ClassController {
     }
 
     async viewClassDetails(req: Request, res: Response) {
-        const classId = String(req.params.classId);
+        const classId = String(req.params.id);
         try {
             const classDetails = await this.classService.viewClassDetails(classId);
             return res.status(200).send({ data: classDetails, status: StatusCodes.OK });

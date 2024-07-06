@@ -89,6 +89,7 @@ const createClass = Joi.object().keys({
   code: Joi.string().required(),
   name: Joi.string().required(),
   description: Joi.string().optional(),
+  maxParticipants: Joi.number().required(),
   startDate: Joi.date().required(),
   endDate: Joi.date().required(),
 });
@@ -101,6 +102,7 @@ const updateClass = Joi.object().keys({
   description: Joi.string().optional(),
   startDate: Joi.date().optional(),
   endDate: Joi.date().optional(),
+  maxParticipants: Joi.number().optional(),
   isActive: Joi.boolean().optional()
 });
 

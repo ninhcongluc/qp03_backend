@@ -42,4 +42,5 @@ export class SemesterController {
             return res.status(400).send({error: error.message, status: StatusCodes.BAD_REQUEST});
         }
     }
+
 }

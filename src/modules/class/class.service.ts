@@ -17,7 +17,12 @@ export class ClassService {
 
     async listClass(courseId: String) {
         try {
-            return await this.classRepository.find({ where: { courseId: String(courseId) } });
+            return await this.dataSource
+            .getRepository('class')
+            .createQueryBuilder('class')
+            .leftJoinAndSelect('class.teacher', 'user')
+            .where('class.courseId = :courseId', { courseId })
+            .getMany();
         } catch (error) {
         throw new Error(error);
         }
@@ -44,7 +49,7 @@ export class ClassService {
             }
 
             if(!await this.checkTimeClass(startDate, endDate, data.courseId)){
-                throw new Error('Class is overlapping with another class');
+                throw new Error(`Class is overlapping with another class ${data.courseId}`);
             }
 
             const newClass = this.classRepository.create({
@@ -69,9 +74,9 @@ export class ClassService {
                 throw new Error('Class must last at least 40 days');
             }
 
-            if(!await this.checkTimeClass(startDate, endDate, data.courseId)){
-                throw new Error('Class is overlapping with another class');
-            }
+            // if(!await this.checkTimeClass(startDate, endDate, data.courseId)){
+            //     throw new Error(`Class is overlapping with another class ${data.startDate} - ${data.endDate} in course ${data.courseId}`);
+            // }
 
             if((await this.checkClassIsUsed(classId) 
                 || await this.checkClassHaveQuiz(classId)) 

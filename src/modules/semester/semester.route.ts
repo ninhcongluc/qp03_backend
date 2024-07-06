@@ -29,4 +29,5 @@ semesterRouter.put('/semester/:id', authentication, authorization(['manager']), 
   return semesterController.updateSemester(req, res);
 });
 
+
 export default semesterRouter;

@@ -18,7 +18,7 @@ classRouter.get(
 );
 
 // manager class
-classRouter.post('/createClass',
+classRouter.post('/create-class',
   authentication,
   authorization(['manager']),
   schemaValidator('/class/create'),
@@ -26,14 +26,14 @@ classRouter.post('/createClass',
     return classController.createClass(req, res);
   });
 
-classRouter.get('/listClass/:courseId',
+classRouter.get('/list-class/:id',
   authentication,
   authorization(['manager']),
   (req: Request, res: Response) => {
     return classController.listClass(req, res);
   });
 
-classRouter.put('/updateClass/:classId',
+classRouter.put('/update-class/:id',
   authentication,
   authorization(['manager']),
   schemaValidator('/class/update'),
@@ -42,7 +42,7 @@ classRouter.put('/updateClass/:classId',
   });
 
 classRouter.delete(
-  '/deleteClass/:classId',
+  '/delete-class/:id',
   authentication,
   authorization(['manager']),
   (req: Request, res: Response) => {
@@ -51,7 +51,7 @@ classRouter.delete(
 );
 
 classRouter.get(
-  '/viewClassDetail/:classId',
+  '/view-class-detail/:id',
   authentication,
   authorization(['manager']),
   (req: Request, res: Response) => {

@@ -31,7 +31,7 @@ userRouter.get('/manager/list', authentication, authorization(['admin']), (req: 
   return userController.listManagerAccount(req, res);
 });
 
-userRouter.get('/manager/:id', authentication, authorization(['admin']), (req: Request, res: Response) => {
+userRouter.get('/manager/:id', authentication, authorization(['admin', 'manager']), (req: Request, res: Response) => {
   return userController.getDetailUser(req, res);
 });
 

@@ -36,4 +36,13 @@ courseRouter.delete('/course/:id', (req: Request, res: Response) => {
   return courseController.deleteCourse(req, res);
 });
 
+courseRouter.get('/course/:id', (req: Request, res: Response) => {
+  return courseController.getDetailCourse(req, res);
+});
+
+courseRouter.get('/course-management/:id', (req: Request, res: Response) => {
+  return courseController.getDetailCourses(req, res);
+});
+
+
 export default courseRouter;
