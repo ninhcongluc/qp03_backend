@@ -19,9 +19,6 @@ export class StudentQuizResult {
   @Column({ type: 'integer', default: 0 })
   score: number;
 
-  @Column({ type: 'integer', nullable: false })
-  numberQuestions: number;
-
   @Column({ type: 'integer', default: 0 })
   numberCorrectAnswers: number;
 
