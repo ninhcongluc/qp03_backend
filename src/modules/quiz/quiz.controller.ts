@@ -36,6 +36,23 @@ export class QuizController {
     }
   }
 
+  async listStudentQuizzes(req, res) {
+    try {
+      const classId = req.params.classId;
+      const userId = req.user._id;
+      const { type } = req.query;
+
+      if (type === 'quizzes') {
+        const quizzes = await this.quizService.listStudentQuizzes(userId, classId, req.query);
+        return res.status(200).send({ data: quizzes, status: StatusCodes.OK });
+      } else {
+        return res.status(400).send({ error: 'Invalid type parameter', status: StatusCodes.BAD_REQUEST });
+      }
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
   async detailQuiz(req: Request, res: Response) {
     try {
       const quizId = String(req.params.quizId);
@@ -83,6 +100,27 @@ export class QuizController {
       const quizId = String(req.params.id);
       const questions = await this.quizService.listQuestionAnswers(quizId);
       return res.status(200).send({ data: questions, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async saveAsDraft(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const result = await this.quizService.saveAsDraft(id, req.body);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async listStudentQuizResult(req: Request, res: Response) {
+    try {
+      const quizId = req.params.id;
+      const result = await this.quizService.listStudentQuizResult(quizId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }

@@ -13,20 +13,17 @@ export class StudentQuizResult {
   @Column({ type: 'uuid' })
   studentId: string;
 
-  @Column({ nullable: false, type: 'enum', enum: ['not_yet', 'doing', 'done'] })
+  @Column({ nullable: false, type: 'enum', enum: ['doing', 'done'] })
   status: string;
 
   @Column({ type: 'integer', default: 0 })
   score: number;
 
-  @Column({ type: 'integer', nullable: false })
-  numberQuestions: number;
-
   @Column({ type: 'integer', default: 0 })
   numberCorrectAnswers: number;
 
-  @Column({ type: 'date', nullable: false })
-  submissionTime: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  submitTime: Date;
 
   @Column({ type: 'integer', nullable: true })
   takeTimeSecs?: number;

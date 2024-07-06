@@ -31,7 +31,7 @@ export class AuthService {
         id: user.id,
         role: user?.role.name,
         email: user.email,
-        timeOut: Math.floor(Date.now() / 1000) + 2 * 60 * 60 // Expires after 2 hours
+        timeOut: Math.floor(Date.now() / 1000) + 24 * 60 * 60 // Expires after 24 hours
       },
       process.env.ACCESS_TOKEN_SECRET_KEY,
       {
