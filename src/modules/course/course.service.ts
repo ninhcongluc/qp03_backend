@@ -172,6 +172,21 @@ export class CourseService {
     }
   }
 
+  async getCourseDetails(courseId: string) {
+    try {
+      return await this.dataSource
+        .getRepository('course')
+        .createQueryBuilder('course')
+        .leftJoinAndSelect('course.manager', 'user')
+        .leftJoinAndSelect('course.semester', 'semester')
+        .where('course.id = :courseId', { courseId })
+        .getOne();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+
   async checkSemesterIsUsed(courseId: string) {
     // kiểm tra xem semester có được sử dụng trong course không
     const course = await this.dataSource
