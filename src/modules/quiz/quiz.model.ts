@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Class } from '../class/class.model';
 import { Question } from '../question/question.model';
+import { StudentQuizResult } from '../student_quiz_result/student-quiz-result.model';
 
 export enum QuizStatus {
   DRAFT = 'draft',
@@ -59,4 +60,7 @@ export class Quiz {
 
   @OneToMany(() => Question, classEntity => classEntity.quiz)
   questions: Question[];
+
+  @OneToMany(() => StudentQuizResult, classEntity => classEntity.quiz)
+  studentQuizResults: StudentQuizResult[];
 }

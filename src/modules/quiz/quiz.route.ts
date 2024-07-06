@@ -31,14 +31,9 @@ quizRouter.get(
 );
 
 //list-quiz by classId
-quizRouter.get(
-  '/quiz',
-  authentication,
-  authorization(['teacher']),
-  (req: Request, res: Response) => {
-    return quizController.listQuiz(req, res);
-  }
-);
+quizRouter.get('/quiz', authentication, authorization(['teacher']), (req: Request, res: Response) => {
+  return quizController.listQuiz(req, res);
+});
 
 quizRouter.get(
   '/quiz/detail/:quizId',
@@ -74,6 +69,16 @@ quizRouter.put(
 
 quizRouter.get('/quiz/:id/question-answers', (req: Request, res: Response) => {
   return quizController.listQuestionAnswers(req, res);
+});
+
+//save as draft quiz
+quizRouter.put('/quiz/:id/save-draft', authentication, authorization(['teacher']), (req: Request, res: Response) => {
+  return quizController.saveAsDraft(req, res);
+});
+
+/**Student */
+quizRouter.get('/quiz/:id/history', authentication, authorization(['student']), (req: Request, res: Response) => {
+  return quizController.listStudentQuizResult(req, res);
 });
 
 export default quizRouter;
