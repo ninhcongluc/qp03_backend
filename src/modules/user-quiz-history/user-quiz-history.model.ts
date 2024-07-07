@@ -18,16 +18,14 @@ export class StudentQuizHistory {
   @Column({ type: 'uuid' })
   studentQuizResultId: string;
 
-  @Column({ type: 'uuid' })
-  questionId: string;
+  @Column({ type: 'bigint', nullable: true })
+  timeLeft?: number;
 
-  @Column({
-    type: 'text',
-    array: true,
-    nullable: true,
-    default: '{}'
-  })
-  answerOptionIds: string[];
+  @Column('jsonb')
+  answers: {
+    questionId: string;
+    answerOptionIds: string[];
+  }[];
 
   @Column({
     type: 'timestamp',
@@ -46,9 +44,6 @@ export class StudentQuizHistory {
 
   @ManyToOne(() => User)
   student: User;
-
-  @ManyToOne(() => User)
-  answerOption: AnswerOption;
 
   @OneToOne(() => StudentQuizResult)
   studentQuizResult: StudentQuizResult;

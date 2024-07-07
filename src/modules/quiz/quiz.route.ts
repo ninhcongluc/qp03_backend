@@ -89,4 +89,22 @@ quizRouter.post('/quiz/:id/submit', authentication, authorization(['student']), 
   return quizController.submitQuiz(req, res);
 });
 
+quizRouter.post(
+  '/quiz/:id/auto-save-answers',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.saveAnswers(req, res);
+  }
+);
+
+quizRouter.get(
+  '/student-quiz-result/:quizResultId',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.getStudentQuizHistory(req, res);
+  }
+);
+
 export default quizRouter;

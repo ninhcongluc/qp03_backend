@@ -250,82 +250,134 @@ export class QuizService {
   async submitQuiz(quizId: string, userId: string, data) {
     const { quizResultId, answers } = data;
     const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
-    //count total question in quiz
     const totalQuestions = await this.questionRepository.count({ where: { quizId } });
-    if (!quiz) {
-      throw new Error('Quiz not found');
-    }
-    if (totalQuestions < 1) {
-      throw new Error('Quiz has no question');
-    }
-    console.log('quiz', quiz);
+
+    if (!quiz) throw new Error('Quiz not found');
+    if (totalQuestions < 1) throw new Error('Quiz has no question');
+
     const scorePerQuestion = quiz.score / totalQuestions;
-    console.log('scorePerQuestion', scorePerQuestion);
     const currentTime = new Date();
     let totalScore = 0;
     let numberCorrectAnswers = 0;
-    for (const [questionId, answerOptionIds] of Object.entries(answers)) {
-      const question = await this.questionRepository.findOne({
-        where: { id: questionId },
-        relations: ['answerOptions']
-      });
 
-      if (!question) continue;
+    let studentQuizHistory = await this.studentQuizHistoryRepository.findOne({
+      where: { studentQuizResultId: quizResultId }
+    });
 
-      const studentQuizHistory = new StudentQuizHistory();
+    if (!studentQuizHistory) {
+      studentQuizHistory = new StudentQuizHistory();
       studentQuizHistory.userId = userId;
       studentQuizHistory.quizId = quizId;
-      studentQuizHistory.questionId = questionId;
       studentQuizHistory.studentQuizResultId = quizResultId;
-      studentQuizHistory.answerOptionIds = Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds];
+    }
+
+    studentQuizHistory.answers = this.parseAnswers(answers);
+
+    for (const { questionId, answerOptionIds } of studentQuizHistory.answers) {
+      const question = await this.questionRepository.findOne({
+        where: {
+          id: questionId
+        },
+        relations: ['answerOptions']
+      });
+      if (!question) continue;
 
       const correctAnswers = question.answerOptions.filter(option => option.isCorrect).map(option => option.id);
       const isMultipleChoice = question.type === 'multiple_choice';
 
       if (isMultipleChoice) {
-        const correctCount = studentQuizHistory.answerOptionIds.filter(id => correctAnswers.includes(id)).length;
-        const incorrectCount = studentQuizHistory.answerOptionIds.length - correctCount;
+        const correctCount = answerOptionIds.filter(id => correctAnswers.includes(id)).length;
+        const incorrectCount = answerOptionIds.length - correctCount;
 
         if (correctCount === correctAnswers.length && incorrectCount === 0) {
           totalScore += scorePerQuestion;
           numberCorrectAnswers++;
         } else if (correctCount > 0 && incorrectCount === 0) {
-          console.log('correct', correctAnswers.length);
           totalScore += (scorePerQuestion * correctCount) / correctAnswers.length;
         }
       } else {
-        if (correctAnswers.includes(studentQuizHistory.answerOptionIds[0])) {
+        if (correctAnswers.includes(answerOptionIds[0])) {
           totalScore += scorePerQuestion;
           numberCorrectAnswers++;
         }
       }
-      console.log('data', {
-        userId,
-        quizId,
-        studentQuizResultId: quizResultId,
-        questionId
-      });
-      await this.studentQuizHistoryRepository.delete({
-        userId,
-        quizId,
-        studentQuizResultId: quizResultId,
-        questionId
-      });
-
-      await this.studentQuizHistoryRepository.save(studentQuizHistory);
     }
 
-    console.log('totalScore', totalScore);
+    await this.studentQuizHistoryRepository.save(studentQuizHistory);
+
     await this.studentQuizResultRepository.update(
       { id: quizResultId },
       {
-        status: StudentQuizStatus.DONE,
         score: totalScore,
         numberCorrectAnswers,
         submitTime: currentTime,
-        takeTimeSecs: 0
+        takeTimeSecs: 0,
+        status: StudentQuizStatus.DONE
       }
     );
-    return 'oke';
+
+    return 'Submitted Quiz successfully';
+  }
+
+  private parseAnswers(answers: any): { questionId: string; answerOptionIds: string[] }[] {
+    if (Array.isArray(answers)) {
+      return answers;
+    } else if (typeof answers === 'object') {
+      return Object.entries(answers).map(([questionId, answerOptionIds]) => ({
+        questionId,
+        answerOptionIds: Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds]
+      }));
+    } else {
+      throw new Error('Invalid answers data format');
+    }
+  }
+
+  async saveAnswers(quizId: string, userId: string, { quizResultId, answers, timeLeft }) {
+    const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+    if (!quiz) throw new Error('Quiz not found');
+
+    let studentQuizHistory = await this.studentQuizHistoryRepository.findOne({
+      where: {
+        userId,
+        quizId,
+        studentQuizResultId: quizResultId
+      }
+    });
+
+    if (studentQuizHistory) {
+      studentQuizHistory.timeLeft = timeLeft;
+      studentQuizHistory.answers = Array.isArray(answers)
+        ? answers
+        : Object.entries(answers).map(([questionId, answerOptionIds]) => ({
+            questionId,
+            answerOptionIds: Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds]
+          }));
+      await this.studentQuizHistoryRepository.save(studentQuizHistory);
+    } else {
+      await this.studentQuizHistoryRepository.save({
+        userId,
+        quizId,
+        studentQuizResultId: quizResultId,
+        timeLeft,
+        answers: Array.isArray(answers)
+          ? answers
+          : Object.entries(answers).map(([questionId, answerOptionIds]) => ({
+              questionId,
+              answerOptionIds: Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds]
+            }))
+      });
+    }
+
+    return 'Save answers successfully';
+  }
+
+  async getStudentQuizHistory(quizResultId: string) {
+    try {
+      return await this.studentQuizHistoryRepository.findOne({
+        where: { studentQuizResultId: quizResultId }
+      });
+    } catch (error) {
+      return error;
+    }
   }
 }

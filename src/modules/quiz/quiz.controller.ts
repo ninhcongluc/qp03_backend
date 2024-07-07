@@ -155,4 +155,25 @@ export class QuizController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
+  async saveAnswers(req, res) {
+    try {
+      const quizId = req.params.id;
+      const userId = req.user._id;
+      const result = await this.quizService.saveAnswers(quizId, userId, req.body);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getStudentQuizHistory(req, res) {
+    try {
+      const quizResultId = req.params.quizResultId;
+      const result = await this.quizService.getStudentQuizHistory(quizResultId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
 }
