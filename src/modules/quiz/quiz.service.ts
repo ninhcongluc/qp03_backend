@@ -1,5 +1,5 @@
 import { DataSource, Repository } from 'typeorm';
-import { Quiz } from './quiz.model';
+import { Quiz, QuizStatus } from './quiz.model';
 import { Class } from '../class/class.model';
 import { AppObject } from '../../commons/consts/app.objects';
 import { Question } from '../question/question.model';
@@ -160,7 +160,7 @@ export class QuizService {
     }
   }
 
-  async saveAsDraft(quizId: string, incomingQuestions: any) {
+  async saveAsDraft(quizId: string, incomingQuestions: any, isSubmit = false) {
     try {
       const existingQuestions = (await this.listQuestionAnswers(quizId)).questions;
 
@@ -205,7 +205,11 @@ export class QuizService {
           }
         }
       }
-      return 'Save as draft successfully';
+
+      if (isSubmit) {
+        await this.quizRepository.update({ id: quizId }, { status: QuizStatus.SUBMITTED });
+      }
+      return 'Save QA successfully';
     } catch (error) {
       throw new Error(error);
     }

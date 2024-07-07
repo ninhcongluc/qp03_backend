@@ -108,8 +108,9 @@ export class QuizController {
   async saveAsDraft(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const isSubmit = Boolean(req.query.isSubmit);
 
-      const result = await this.quizService.saveAsDraft(id, req.body);
+      const result = await this.quizService.saveAsDraft(id, req.body, isSubmit);
       return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });

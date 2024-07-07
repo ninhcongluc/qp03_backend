@@ -71,8 +71,8 @@ quizRouter.get('/quiz/:id/question-answers', (req: Request, res: Response) => {
   return quizController.listQuestionAnswers(req, res);
 });
 
-//save as draft quiz
-quizRouter.put('/quiz/:id/save-draft', authentication, authorization(['teacher']), (req: Request, res: Response) => {
+//save question - answers
+quizRouter.put('/quiz/:id/save-qa', authentication, authorization(['teacher']), (req: Request, res: Response) => {
   return quizController.saveAsDraft(req, res);
 });
 
