@@ -373,11 +373,28 @@ export class QuizService {
 
   async getStudentQuizHistory(quizResultId: string) {
     try {
-      return await this.studentQuizHistoryRepository.findOne({
-        where: { studentQuizResultId: quizResultId }
-      });
+      const [quizHistory, quizResult] = await Promise.all([
+        this.studentQuizHistoryRepository.findOne({ where: { studentQuizResultId: quizResultId } }),
+        this.studentQuizResultRepository.findOne({ where: { id: quizResultId } })
+      ]);
+
+      if (!quizHistory || !quizResult) {
+        throw new Error('Quiz history or result not found');
+      }
+      const quizData = await this.listQuestionAnswers(quizHistory.quizId);
+
+      return {
+        quizName: quizData.name,
+        quizScore: quizData.score,
+        score: quizResult.score,
+        numberCorrectAnswers: quizResult.numberCorrectAnswers,
+        questions: quizData.questions,
+        ...quizHistory,
+        createdAt: quizHistory.createdAt,
+        updatedAt: quizHistory.updatedAt
+      };
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 }

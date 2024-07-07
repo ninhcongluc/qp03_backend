@@ -176,4 +176,15 @@ export class QuizController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
+  async getQuizReview(req, res) {
+    try {
+      const quizResultId = req.params.quizResultId;
+      const result = await this.quizService.getStudentQuizHistory(quizResultId);
+      console.log(result);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
 }

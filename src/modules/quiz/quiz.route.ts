@@ -107,4 +107,13 @@ quizRouter.get(
   }
 );
 
+quizRouter.get(
+  '/student-review-quiz/:quizResultId',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.getQuizReview(req, res);
+  }
+);
+
 export default quizRouter;
