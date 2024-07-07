@@ -5,6 +5,8 @@ import { AppObject } from '../../commons/consts/app.objects';
 import { Question } from '../question/question.model';
 import { AnswerOption } from '../answer_option/answer-option.model';
 import { QuestionBank } from '../question_bank/question_bank.model';
+import { StudentQuizResult, StudentQuizStatus } from '../student_quiz_result/student-quiz-result.model';
+import { StudentQuizHistory } from '../user-quiz-history/user-quiz-history.model';
 
 export class QuizService {
   private quizRepository: Repository<Quiz>;
@@ -12,6 +14,8 @@ export class QuizService {
   private answerOptionRepository: Repository<AnswerOption>;
   private questionBankRepository: Repository<QuestionBank>;
   private classRepository: Repository<Class>;
+  private studentQuizResultRepository: Repository<StudentQuizResult>;
+  private studentQuizHistoryRepository: Repository<StudentQuizHistory>;
 
   constructor(private readonly dataSource: DataSource) {
     this.quizRepository = this.dataSource.getRepository(Quiz);
@@ -19,6 +23,8 @@ export class QuizService {
     this.answerOptionRepository = this.dataSource.getRepository(AnswerOption);
     this.questionBankRepository = this.dataSource.getRepository(QuestionBank);
     this.classRepository = this.dataSource.getRepository(Class);
+    this.studentQuizResultRepository = this.dataSource.getRepository(StudentQuizResult);
+    this.studentQuizHistoryRepository = this.dataSource.getRepository(StudentQuizHistory);
   }
 
   async createQuiz(data: any) {
@@ -54,7 +60,11 @@ export class QuizService {
         .createQueryBuilder('quiz')
         .leftJoinAndSelect('quiz.class', 'class')
         .leftJoinAndSelect('class.classParticipants', 'classParticipants')
-        .where('classParticipants.userId = :userId AND quiz.classId = :classId', { userId, classId });
+        .where('classParticipants.userId = :userId AND quiz.classId = :classId AND quiz.status = :status', {
+          userId,
+          classId,
+          status: QuizStatus.SUBMITTED
+        });
 
       if (name) {
         queryBuilder.andWhere('quiz.name LIKE :name', { name: `%${name}%` });
@@ -215,6 +225,10 @@ export class QuizService {
     }
   }
 
+  async startQuiz(prepareData) {
+    return await this.studentQuizResultRepository.save(prepareData);
+  }
+
   async listStudentQuizResult(quizId: string) {
     try {
       const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
@@ -231,5 +245,87 @@ export class QuizService {
     } catch (error) {
       return error;
     }
+  }
+
+  async submitQuiz(quizId: string, userId: string, data) {
+    const { quizResultId, answers } = data;
+    const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+    //count total question in quiz
+    const totalQuestions = await this.questionRepository.count({ where: { quizId } });
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+    if (totalQuestions < 1) {
+      throw new Error('Quiz has no question');
+    }
+    console.log('quiz', quiz);
+    const scorePerQuestion = quiz.score / totalQuestions;
+    console.log('scorePerQuestion', scorePerQuestion);
+    const currentTime = new Date();
+    let totalScore = 0;
+    let numberCorrectAnswers = 0;
+    for (const [questionId, answerOptionIds] of Object.entries(answers)) {
+      const question = await this.questionRepository.findOne({
+        where: { id: questionId },
+        relations: ['answerOptions']
+      });
+
+      if (!question) continue;
+
+      const studentQuizHistory = new StudentQuizHistory();
+      studentQuizHistory.userId = userId;
+      studentQuizHistory.quizId = quizId;
+      studentQuizHistory.questionId = questionId;
+      studentQuizHistory.studentQuizResultId = quizResultId;
+      studentQuizHistory.answerOptionIds = Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds];
+
+      const correctAnswers = question.answerOptions.filter(option => option.isCorrect).map(option => option.id);
+      const isMultipleChoice = question.type === 'multiple_choice';
+
+      if (isMultipleChoice) {
+        const correctCount = studentQuizHistory.answerOptionIds.filter(id => correctAnswers.includes(id)).length;
+        const incorrectCount = studentQuizHistory.answerOptionIds.length - correctCount;
+
+        if (correctCount === correctAnswers.length && incorrectCount === 0) {
+          totalScore += scorePerQuestion;
+          numberCorrectAnswers++;
+        } else if (correctCount > 0 && incorrectCount === 0) {
+          console.log('correct', correctAnswers.length);
+          totalScore += (scorePerQuestion * correctCount) / correctAnswers.length;
+        }
+      } else {
+        if (correctAnswers.includes(studentQuizHistory.answerOptionIds[0])) {
+          totalScore += scorePerQuestion;
+          numberCorrectAnswers++;
+        }
+      }
+      console.log('data', {
+        userId,
+        quizId,
+        studentQuizResultId: quizResultId,
+        questionId
+      });
+      await this.studentQuizHistoryRepository.delete({
+        userId,
+        quizId,
+        studentQuizResultId: quizResultId,
+        questionId
+      });
+
+      await this.studentQuizHistoryRepository.save(studentQuizHistory);
+    }
+
+    console.log('totalScore', totalScore);
+    await this.studentQuizResultRepository.update(
+      { id: quizResultId },
+      {
+        status: StudentQuizStatus.DONE,
+        score: totalScore,
+        numberCorrectAnswers,
+        submitTime: currentTime,
+        takeTimeSecs: 0
+      }
+    );
+    return 'oke';
   }
 }

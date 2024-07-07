@@ -77,8 +77,16 @@ quizRouter.put('/quiz/:id/save-qa', authentication, authorization(['teacher']), 
 });
 
 /**Student */
+quizRouter.post('/quiz/:id/start-quiz', authentication, authorization(['student']), (req: Request, res: Response) => {
+  return quizController.startQuiz(req, res);
+});
+
 quizRouter.get('/quiz/:id/history', authentication, authorization(['student']), (req: Request, res: Response) => {
   return quizController.listStudentQuizResult(req, res);
+});
+
+quizRouter.post('/quiz/:id/submit', authentication, authorization(['student']), (req: Request, res: Response) => {
+  return quizController.submitQuiz(req, res);
 });
 
 export default quizRouter;

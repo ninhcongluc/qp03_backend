@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Quiz } from '../quiz/quiz.model';
 import { User } from '../user/user.model';
 import { AnswerOption } from '../answer_option/answer-option.model';
+import { StudentQuizResult } from '../student_quiz_result/student-quiz-result.model';
 
 @Entity('student_quiz_history')
 export class StudentQuizHistory {
@@ -15,9 +16,17 @@ export class StudentQuizHistory {
   quizId: string;
 
   @Column({ type: 'uuid' })
+  studentQuizResultId: string;
+
+  @Column({ type: 'uuid' })
   questionId: string;
 
-  @Column()
+  @Column({
+    type: 'text',
+    array: true,
+    nullable: true,
+    default: '{}'
+  })
   answerOptionIds: string[];
 
   @Column({
@@ -40,4 +49,7 @@ export class StudentQuizHistory {
 
   @ManyToOne(() => User)
   answerOption: AnswerOption;
+
+  @OneToOne(() => StudentQuizResult)
+  studentQuizResult: StudentQuizResult;
 }
