@@ -92,6 +92,29 @@ const updateQuiz = Joi.object().keys({
   showAnswer: Joi.boolean().optional()
 });
 
+const createClass = Joi.object().keys({
+  courseId: Joi.string().required(),
+  teacherId: Joi.string().required(),
+  code: Joi.string().required(),
+  name: Joi.string().required(),
+  description: Joi.string().optional(),
+  maxParticipants: Joi.number().required(),
+  startDate: Joi.date().required(),
+  endDate: Joi.date().required(),
+});
+
+const updateClass = Joi.object().keys({
+  courseId: Joi.string().optional(),
+  teacherId: Joi.string().optional(),
+  code: Joi.string().optional(),
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  startDate: Joi.date().optional(),
+  endDate: Joi.date().optional(),
+  maxParticipants: Joi.number().optional(),
+  isActive: Joi.boolean().optional()
+});
+
 export default {
   '/auth/signIn': authSignIn,
   '/auth/signUp': authSignUp,
@@ -103,4 +126,6 @@ export default {
   '/quiz/update': updateQuiz,
   '/profile/editProfile':updateProfile,
   '/course/update': updateCourse, 
+  '/class/create': createClass,
+  '/class/update': updateClass
 } as { [key: string]: ObjectSchema };

@@ -122,7 +122,11 @@ export class UserService {
 
   async getUserProfile(userId: string) {
     try {
-      return await this.userRepository.findOne({ where: { id: userId } });
+      return await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .where('user.id = :userId', { userId })
+      .getOne();
     } catch (error) {
       return error;
     }

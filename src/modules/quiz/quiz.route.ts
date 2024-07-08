@@ -31,7 +31,7 @@ quizRouter.get(
 );
 
 //list-quiz by classId
-quizRouter.get('/quiz', authentication, authorization(['teacher']), (req: Request, res: Response) => {
+quizRouter.get('/quiz/:classId', authentication, authorization(['teacher']), (req: Request, res: Response) => {
   return quizController.listQuiz(req, res);
 });
 

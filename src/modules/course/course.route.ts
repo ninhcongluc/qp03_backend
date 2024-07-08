@@ -36,6 +36,10 @@ courseRouter.get('/course', (req: Request, res: Response) => {
   return courseController.listCourse(req, res);
 });
 
+courseRouter.get('/course/:courseId', (req: Request, res: Response) => {
+  return courseController.detailCourse(req, res);
+});
+
 courseRouter.put('/course/:id', schemaValidator('/course/update'), (req: Request, res: Response) => {
   return courseController.updateCourse(req, res);
 });
@@ -43,5 +47,14 @@ courseRouter.put('/course/:id', schemaValidator('/course/update'), (req: Request
 courseRouter.delete('/course/:id', (req: Request, res: Response) => {
   return courseController.deleteCourse(req, res);
 });
+
+courseRouter.get('/course/:id', (req: Request, res: Response) => {
+  return courseController.getDetailCourse(req, res);
+});
+
+courseRouter.get('/course-management/:id', (req: Request, res: Response) => {
+  return courseController.getDetailCourses(req, res);
+});
+
 
 export default courseRouter;

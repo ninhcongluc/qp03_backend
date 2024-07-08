@@ -38,7 +38,7 @@ export class Class {
   @Column({ type: 'integer', default: 50 })
   maxParticipants: number;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
   @Column({ type: 'timestamp', default: new Date() })

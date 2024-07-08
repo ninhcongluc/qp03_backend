@@ -23,7 +23,16 @@ export class CourseController {
     }
   }
 
-  
+  async detailCourse(req: Request, res: Response) {
+    try {
+      const courseId = req.params.courseId;
+      const courses = await this.courseService.getDetailCourse(courseId, req.query);
+      return res.status(200).send({ data: courses, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
   async listStudentCourses(req, res) {
     try {
       const userId = req.user._id;
@@ -58,6 +67,26 @@ export class CourseController {
       const courseId = req.params.id;
       await this.courseService.deleteCourse(courseId);
       return res.status(204).send({ status: StatusCodes.NO_CONTENT });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getDetailCourse(req: Request, res: Response) {
+    try {
+      const courseId = req.params.id;
+      const course = await this.courseService.getDetailCourse(courseId, req.query);
+      return res.status(200).send({ data: course, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getDetailCourses(req: Request, res: Response) {
+    try {
+      const courseId = req.params.id;
+      const course = await this.courseService.getCourseDetails(courseId);
+      return res.status(200).send({ data: course, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }

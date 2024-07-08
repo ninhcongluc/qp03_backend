@@ -133,13 +133,13 @@ export class CourseService {
     }
   }
 
-  async getDetailCourse(classId: string, query) {
+  async getDetailCourse(courseId: string, query) {
     try {
       const queryBuilder = this.courseRepository
         .createQueryBuilder('course')
         .leftJoinAndSelect('course.classes', 'class')
         .leftJoinAndSelect('course.semester', 'semester')
-        .where('class.id = :classId', { classId });
+        .where('course.id = :courseId', { courseId });
 
       if (query.teacherId) {
         queryBuilder.andWhere('class.teacherId = :teacherId', { teacherId: query.teacherId });
@@ -182,6 +182,21 @@ export class CourseService {
       throw new Error(error);
     }
   }
+
+  async getCourseDetails(courseId: string) {
+    try {
+      return await this.dataSource
+        .getRepository('course')
+        .createQueryBuilder('course')
+        .leftJoinAndSelect('course.manager', 'user')
+        .leftJoinAndSelect('course.semester', 'semester')
+        .where('course.id = :courseId', { courseId })
+        .getOne();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
 
   async checkSemesterIsUsed(courseId: string) {
     // kiểm tra xem semester có được sử dụng trong course không
