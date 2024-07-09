@@ -22,6 +22,7 @@ export class ClassService {
             .createQueryBuilder('class')
             .leftJoinAndSelect('class.teacher', 'user')
             .where('class.courseId = :courseId', { courseId })
+            .orderBy('class.name', 'ASC')
             .getMany();
         } catch (error) {
         throw new Error(error);
