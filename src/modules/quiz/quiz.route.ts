@@ -116,4 +116,9 @@ quizRouter.get(
   }
 );
 
+/**Bank */
+quizRouter.get('/quiz/:id/question-banks', authentication, (req: Request, res: Response) => {
+  return quizController.getQuestionBanks(req, res);
+});
+
 export default quizRouter;

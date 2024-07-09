@@ -1,4 +1,4 @@
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Quiz, QuizStatus } from './quiz.model';
 import { Class } from '../class/class.model';
 import { AppObject } from '../../commons/consts/app.objects';
@@ -171,7 +171,7 @@ export class QuizService {
     }
   }
 
-  async saveAsDraft(quizId: string, incomingQuestions: any, isSubmit = false) {
+  async saveAsDraft(quizId: string, userId: string, incomingQuestions: any, isSubmit = false) {
     try {
       const existingQuestions = (await this.listQuestionAnswers(quizId)).questions;
 
@@ -183,10 +183,12 @@ export class QuizService {
       const questionsToCreate = incomingQuestions.filter(q => !existingQuestionIds.includes(q.id));
       const questionsToUpdate = incomingQuestions.filter(q => existingQuestionIds.includes(q.id));
       const questionsToDelete = existingQuestions.filter(q => !incomingQuestionIds.includes(q.id));
+      const newQuestionIds = [];
 
       for (const question of questionsToCreate) {
         delete question.id;
         const createdQuestion = await this.questionRepository.save({ ...question, quizId });
+        newQuestionIds.push(createdQuestion.id);
         for (const answer of question.answerOptions) {
           await this.answerOptionRepository.save({ ...answer, questionId: createdQuestion.id });
         }
@@ -205,7 +207,6 @@ export class QuizService {
 
       for (const question of questionsToDelete) {
         await this.answerOptionRepository.delete({ questionId: question.id });
-        await this.questionBankRepository.delete({ questionId: question.id });
         await this.questionRepository.delete(question.id);
       }
 
@@ -219,11 +220,35 @@ export class QuizService {
 
       if (isSubmit) {
         await this.quizRepository.update({ id: quizId }, { status: QuizStatus.SUBMITTED });
+        // save to qbanks here
+        await this.saveQuestionToBanks(userId, quizId, newQuestionIds);
       }
       return 'Save QA successfully';
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async saveQuestionToBanks(userId: string, quizId: string, questionIds: string[]) {
+    const quizData = await this.quizRepository.findOne({
+      where: { id: quizId },
+      relations: ['class', 'class.course']
+    });
+
+    if (!quizData || !quizData.class || !quizData.class.courseId) {
+      throw new Error('Course not found.');
+    }
+
+    const prepareData = questionIds.map(questionId => {
+      return {
+        teacherId: userId,
+        courseId: quizData.class.courseId,
+        questionId
+      };
+    });
+
+    console.log('250', prepareData);
+    await this.questionBankRepository.save(prepareData);
   }
 
   async startQuiz(prepareData) {
@@ -394,6 +419,45 @@ export class QuizService {
         createdAt: quizHistory.createdAt,
         updatedAt: quizHistory.updatedAt
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getQuestionBanks(quizId: string, userId: string) {
+    try {
+      const quizData = await this.quizRepository.findOne({
+        where: { id: quizId },
+        relations: ['class', 'class.course']
+      });
+
+      if (!quizData || !quizData.class || !quizData.class.courseId) {
+        throw new Error('Course not found.');
+      }
+
+      const questionBanks = await this.questionBankRepository.find({
+        where: { teacherId: userId, courseId: quizData.class.courseId },
+        select: ['questionId']
+      });
+
+      const questionIds = questionBanks.map(qb => qb.questionId);
+
+      const questions = await this.questionRepository.find({
+        where: { id: In(questionIds) },
+        relations: ['answerOptions'],
+        order: { createdAt: 'DESC' }
+      });
+
+      // Filter out duplicates based on the "text" field
+      const uniqueQuestions = questions.reduce((acc, question) => {
+        const exists = acc.some(q => q.text === question.text);
+        if (!exists) {
+          acc.push(question);
+        }
+        return acc;
+      }, []);
+
+      return uniqueQuestions;
     } catch (error) {
       throw error;
     }

@@ -106,12 +106,13 @@ export class QuizController {
     }
   }
 
-  async saveAsDraft(req: Request, res: Response) {
+  async saveAsDraft(req, res) {
     try {
       const { id } = req.params;
+      const userId = req.user._id;
       const isSubmit = Boolean(req.query.isSubmit);
 
-      const result = await this.quizService.saveAsDraft(id, req.body, isSubmit);
+      const result = await this.quizService.saveAsDraft(id, userId, req.body, isSubmit);
       return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
@@ -182,6 +183,18 @@ export class QuizController {
       const quizResultId = req.params.quizResultId;
       const result = await this.quizService.getStudentQuizHistory(quizResultId);
       console.log(result);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getQuestionBanks(req, res) {
+    try {
+      const quizId = req.params.id;
+      const userId = req.user._id;
+
+      const result = await this.quizService.getQuestionBanks(quizId, userId);
       return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
