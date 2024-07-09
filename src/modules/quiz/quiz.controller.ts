@@ -1,6 +1,7 @@
 import { Response, Request } from 'express';
 import { QuizService } from './quiz.service';
 import { StatusCodes } from 'http-status-codes';
+import { StudentQuizStatus } from '../student_quiz_result/student-quiz-result.model';
 
 export class QuizController {
   constructor(private readonly quizService: QuizService) {}
@@ -108,18 +109,79 @@ export class QuizController {
   async saveAsDraft(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const isSubmit = Boolean(req.query.isSubmit);
 
-      const result = await this.quizService.saveAsDraft(id, req.body);
+      const result = await this.quizService.saveAsDraft(id, req.body, isSubmit);
       return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
 
-  async listStudentQuizResult(req: Request, res: Response) {
+  async startQuiz(req, res) {
+    try {
+      const quizId = req.params.id;
+      const prepareData = {
+        quizId,
+        studentId: req.user._id,
+        status: StudentQuizStatus.DOING,
+        score: 0,
+        numberCorrectAnswers: 0
+      };
+      const result = await this.quizService.startQuiz(prepareData);
+      return res.status(200).send({ data: result, status: StatusCodes.CREATED });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async listStudentQuizResult(req, res) {
     try {
       const quizId = req.params.id;
       const result = await this.quizService.listStudentQuizResult(quizId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async submitQuiz(req, res) {
+    try {
+      const quizId = req.params.id;
+      const userId = req.user._id;
+      const result = await this.quizService.submitQuiz(quizId, userId, req.body);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async saveAnswers(req, res) {
+    try {
+      const quizId = req.params.id;
+      const userId = req.user._id;
+      const result = await this.quizService.saveAnswers(quizId, userId, req.body);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getStudentQuizHistory(req, res) {
+    try {
+      const quizResultId = req.params.quizResultId;
+      const result = await this.quizService.getStudentQuizHistory(quizResultId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getQuizReview(req, res) {
+    try {
+      const quizResultId = req.params.quizResultId;
+      const result = await this.quizService.getStudentQuizHistory(quizResultId);
+      console.log(result);
       return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });

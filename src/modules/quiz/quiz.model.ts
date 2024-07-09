@@ -31,9 +31,6 @@ export class Quiz {
   @Column({ type: 'timestamp', nullable: false })
   endDate: Date;
 
-  @Column({ type: 'integer', nullable: false, default: 0 })
-  numberOfQuestions: number;
-
   @Column({ type: 'integer', default: 10 })
   score: number;
 

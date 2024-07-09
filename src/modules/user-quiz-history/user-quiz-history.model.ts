@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Quiz } from '../quiz/quiz.model';
 import { User } from '../user/user.model';
 import { AnswerOption } from '../answer_option/answer-option.model';
+import { StudentQuizResult } from '../student_quiz_result/student-quiz-result.model';
 
 @Entity('student_quiz_history')
 export class StudentQuizHistory {
@@ -15,10 +16,16 @@ export class StudentQuizHistory {
   quizId: string;
 
   @Column({ type: 'uuid' })
-  questionId: string;
+  studentQuizResultId: string;
 
-  @Column()
-  answerOptionIds: string[];
+  @Column({ type: 'bigint', nullable: true })
+  timeLeft?: number;
+
+  @Column('jsonb')
+  answers: {
+    questionId: string;
+    answerOptionIds: string[];
+  }[];
 
   @Column({
     type: 'timestamp',
@@ -38,6 +45,6 @@ export class StudentQuizHistory {
   @ManyToOne(() => User)
   student: User;
 
-  @ManyToOne(() => User)
-  answerOption: AnswerOption;
+  @OneToOne(() => StudentQuizResult)
+  studentQuizResult: StudentQuizResult;
 }
