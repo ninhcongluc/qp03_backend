@@ -31,9 +31,6 @@ export class Quiz {
   @Column({ type: 'timestamp', nullable: false })
   endDate: Date;
 
-  @Column({ type: 'integer', nullable: false, default: 0 })
-  numberOfQuestions: number;
-
   @Column({ type: 'integer', default: 10 })
   score: number;
 
@@ -43,7 +40,7 @@ export class Quiz {
   @Column({ type: 'boolean', default: false })
   isLimitedAttempts: boolean;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'integer', nullable: true, default: 0 })
   maxAttempts: number;
 
   @Column({ type: 'boolean', default: false })

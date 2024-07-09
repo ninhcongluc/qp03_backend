@@ -10,6 +10,7 @@ import { Question } from '../modules/question/question.model';
 import { QuestionBank } from '../modules/question_bank/question_bank.model';
 import { StudentQuizResult } from '../modules/student_quiz_result/student-quiz-result.model';
 import { Course } from '../modules/course/course.model';
+import { StudentQuizHistory } from '../modules/user-quiz-history/user-quiz-history.model';
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -30,7 +31,8 @@ const AppDataSource = new DataSource({
     Question,
     QuestionBank,
     AnswerOption,
-    StudentQuizResult
+    StudentQuizResult,
+    StudentQuizHistory
   ],
   synchronize: true
 });

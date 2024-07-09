@@ -27,6 +27,14 @@ userRouter.put('/user/change-password', (req: Request, res: Response) => {
   return userController.changePassword(req, res);
 });
 
+userRouter.post('/user/forgot-password', (req: Request, res: Response) => {
+  return userController.forgotPassword(req, res);
+});
+
+userRouter.post('/user/reset-password', (req: Request, res: Response) => {
+  return userController.resetPassword(req, res);
+});
+
 userRouter.get('/manager/list', authentication, authorization(['admin']), (req: Request, res: Response) => {
   return userController.listManagerAccount(req, res);
 });

@@ -71,14 +71,63 @@ quizRouter.get('/quiz/:id/question-answers', (req: Request, res: Response) => {
   return quizController.listQuestionAnswers(req, res);
 });
 
-//save as draft quiz
-quizRouter.put('/quiz/:id/save-draft', authentication, authorization(['teacher']), (req: Request, res: Response) => {
+//save question - answers
+quizRouter.put('/quiz/:id/save-qa', authentication, authorization(['teacher']), (req: Request, res: Response) => {
   return quizController.saveAsDraft(req, res);
 });
 
 /**Student */
+quizRouter.post('/quiz/:id/start-quiz', authentication, authorization(['student']), (req: Request, res: Response) => {
+  return quizController.startQuiz(req, res);
+});
+
 quizRouter.get('/quiz/:id/history', authentication, authorization(['student']), (req: Request, res: Response) => {
   return quizController.listStudentQuizResult(req, res);
 });
+
+quizRouter.post('/quiz/:id/submit', authentication, authorization(['student']), (req: Request, res: Response) => {
+  return quizController.submitQuiz(req, res);
+});
+
+quizRouter.post(
+  '/quiz/:id/auto-save-answers',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.saveAnswers(req, res);
+  }
+);
+
+quizRouter.get(
+  '/student-quiz-result/:quizResultId',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.getStudentQuizHistory(req, res);
+  }
+);
+
+quizRouter.get(
+  '/student-review-quiz/:quizResultId',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.getQuizReview(req, res);
+  }
+);
+
+/**Bank */
+quizRouter.get('/quiz/:id/question-banks', authentication, (req: Request, res: Response) => {
+  return quizController.getQuestionBanks(req, res);
+});
+
+quizRouter.get(
+  '/quiz/:id/student-grades',
+  authentication,
+  authorization(['teacher']),
+  (req: Request, res: Response) => {
+    return quizController.getStudentGrades(req, res);
+  }
+);
 
 export default quizRouter;
