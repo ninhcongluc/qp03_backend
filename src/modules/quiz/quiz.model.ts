@@ -40,7 +40,7 @@ export class Quiz {
   @Column({ type: 'boolean', default: false })
   isLimitedAttempts: boolean;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'integer', nullable: true, default: 0 })
   maxAttempts: number;
 
   @Column({ type: 'boolean', default: false })
