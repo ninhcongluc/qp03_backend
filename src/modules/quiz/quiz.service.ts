@@ -462,4 +462,48 @@ export class QuizService {
       throw error;
     }
   }
+
+  async getStudentGrades(quizId: string) {
+    try {
+      const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+      if (!quiz) {
+        throw new Error('Quiz not found');
+      }
+
+      const studentQuizResults = await this.studentQuizResultRepository
+        .createQueryBuilder('result')
+        .innerJoin('result.student', 'student')
+        .leftJoin('result.quiz', 'quiz')
+        .where('result.quizId = :quizId AND result.status = :status', { quizId, status: StudentQuizStatus.DONE })
+        .andWhere(
+          `result."submitTime" = (SELECT MAX("submitTime") FROM student_quiz_results WHERE "studentId" = result."studentId" AND "quizId" = :quizId)`,
+          { quizId }
+        )
+        .select([
+          'result.id',
+          'result.studentId',
+          'result.status',
+          'student.firstName',
+          'student.lastName',
+          'result.score',
+          'result.numberCorrectAnswers',
+          'result.submitTime',
+          'quiz.name'
+        ])
+        .getMany();
+
+      return studentQuizResults.map(result => ({
+        id: result.id,
+        quizName: result?.quiz.name,
+        studentId: result.studentId,
+        status: result.status,
+        studentName: `${result.student.firstName} ${result.student.lastName}`,
+        score: result.score,
+        numberCorrectAnswers: result.numberCorrectAnswers,
+        submitTime: result.submitTime
+      }));
+    } catch (error) {
+      throw error;
+    }
+  }
 }

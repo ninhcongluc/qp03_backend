@@ -200,4 +200,14 @@ export class QuizController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
+  async getStudentGrades(req, res) {
+    try {
+      const quizId = req.params.id;
+      const result = await this.quizService.getStudentGrades(quizId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
 }

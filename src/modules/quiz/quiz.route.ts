@@ -121,4 +121,13 @@ quizRouter.get('/quiz/:id/question-banks', authentication, (req: Request, res: R
   return quizController.getQuestionBanks(req, res);
 });
 
+quizRouter.get(
+  '/quiz/:id/student-grades',
+  authentication,
+  authorization(['teacher']),
+  (req: Request, res: Response) => {
+    return quizController.getStudentGrades(req, res);
+  }
+);
+
 export default quizRouter;
