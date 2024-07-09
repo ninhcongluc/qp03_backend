@@ -206,6 +206,7 @@ export class QuizService {
 
       for (const question of questionsToDelete) {
         await this.answerOptionRepository.delete({ questionId: question.id });
+        await this.questionBankRepository.delete({ questionId: question.id });
         await this.questionRepository.delete(question.id);
       }
 
