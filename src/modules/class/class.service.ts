@@ -15,18 +15,19 @@ export class ClassService {
     }
   }
 
-  async listClass(courseId: String) {
-    try {
-      return await this.dataSource
-        .getRepository('class')
-        .createQueryBuilder('class')
-        .leftJoinAndSelect('class.teacher', 'user')
-        .where('class.courseId = :courseId', { courseId })
-        .getMany();
-    } catch (error) {
-      throw new Error(error);
+    async listClass(courseId: String) {
+        try {
+            return await this.dataSource
+            .getRepository('class')
+            .createQueryBuilder('class')
+            .leftJoinAndSelect('class.teacher', 'user')
+            .where('class.courseId = :courseId', { courseId })
+            .orderBy('class.name', 'ASC')
+            .getMany();
+        } catch (error) {
+        throw new Error(error);
+        }
     }
-  }
 
   async createClass(data: Class) {
     try {
