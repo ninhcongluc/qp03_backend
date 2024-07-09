@@ -49,7 +49,7 @@ export class ClassService {
         throw new Error('Class must last at least 40 days');
       }
 
-      if (!(await this.checkTimeClass(startDate, endDate, data.courseId))) {
+      if (await this.checkTimeClass(startDate, endDate, data.courseId)) {
         throw new Error(`Class is overlapping with another class ${data.courseId}`);
       }
 
@@ -127,7 +127,6 @@ export class ClassService {
         endDate
       })
       .getOne();
-
     return overlappingClasses ? true : false;
   }
 

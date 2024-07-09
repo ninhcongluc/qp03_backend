@@ -34,6 +34,11 @@ export class QuizService {
         throw new Error('Class not found');
       }
 
+      const duplicateName = await this.quizRepository.findOne({ where: { name: data.name, classId: data.classId } });
+      if (duplicateName) {
+        throw new Error('Quiz name is existed');
+      }
+
       const newQuiz = this.quizRepository.create(data);
       return await this.quizRepository.save(newQuiz);
     } catch (error) {
@@ -101,9 +106,9 @@ export class QuizService {
     }
   }
 
-  async detailQuiz(quizId: String) {
+  async detailQuiz(quizId) {
     try {
-      return await this.quizRepository.findOne({ where: { id: String(quizId) } });
+      return await this.quizRepository.findOne({ where: { id: quizId } });
     } catch (error) {
       return error;
     }
@@ -126,6 +131,15 @@ export class QuizService {
       const quiz = await this.quizRepository.findOne({ where: { id } });
       if (!quiz) {
         throw new Error('Quiz not found');
+      }
+      const questions = await this.questionRepository.find({ where: { quizId: id } });
+      if (questions.length > 0) {
+        throw new Error('Quiz has questions, remove questions first');
+      }
+      // if quiz is used -> can not delete quiz
+      const studentQuizResult = await this.studentQuizResultRepository.findOne({ where: { quizId: id } });
+      if (studentQuizResult) {
+        throw new Error('Quiz is used in system');
       }
       return await this.quizRepository.delete({ id });
     } catch (error) {
@@ -247,7 +261,6 @@ export class QuizService {
       };
     });
 
-    console.log('250', prepareData);
     await this.questionBankRepository.save(prepareData);
   }
 
@@ -257,17 +270,23 @@ export class QuizService {
 
   async listStudentQuizResult(quizId: string) {
     try {
-      const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
-      if (!quiz) {
-        throw new Error('Quiz not found');
-      }
+      const quiz = await this.quizRepository.findOne({
+        where: { id: quizId },
+        relations: ['questions']
+      });
+      const numberOfQuestions = quiz.questions.length;
 
-      return await this.quizRepository
+      const result = await this.quizRepository
         .createQueryBuilder('quiz')
         .leftJoinAndSelect('quiz.studentQuizResults', 'studentQuizResults')
         .where('quiz.id = :quizId', { quizId })
         .orderBy('studentQuizResults.submitTime', 'ASC')
         .getOne();
+
+      return {
+        ...result,
+        numberOfQuestions
+      };
     } catch (error) {
       return error;
     }

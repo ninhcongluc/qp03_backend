@@ -158,11 +158,11 @@ export class UserService {
 
   async listAccountByRole(roleId: number) {
     try {
-      return await this.userRepository.find({ 
+      return await this.userRepository.find({
         where: { roleId, isDeleted: false },
         order: {
           firstName: 'DESC'
-        } 
+        }
       });
     } catch (error) {
       return error;
@@ -172,10 +172,10 @@ export class UserService {
   async getUserProfile(userId: string) {
     try {
       return await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.role', 'role')
-      .where('user.id = :userId', { userId })
-      .getOne();
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.role', 'role')
+        .where('user.id = :userId', { userId })
+        .getOne();
     } catch (error) {
       return error;
     }
@@ -238,7 +238,7 @@ export class UserService {
       throw new Error(error);
     }
   }
-  
+
   async getTeacherDetails(userId: string): Promise<User | null> {
     try {
       return await this.userRepository
@@ -271,9 +271,6 @@ export class UserService {
       const oldParticipants = await this.classParticipantsRepository.find({ where: { classId: classId } });
       const participantIds = oldParticipants.map(participant => participant.id);
       await this.classParticipantsRepository.delete({ id: In(participantIds) });
-
-      // Remove students from the user table
-      await this.userRepository.delete({ id: In(participantIds) });
 
       const newUsers = await Promise.all(
         preparedData.map(async user => {
@@ -320,7 +317,6 @@ export class UserService {
     } catch (error) {
       throw new Error(error);
     }
-
   }
 
   async listStudentInClass(classId: string) {
@@ -345,7 +341,7 @@ export class UserService {
         throw new Error('User not found');
       }
 
-      if(await this.checkUserIsUsed(id) && !data.isActive){
+      if ((await this.checkUserIsUsed(id)) && !data.isActive) {
         throw new Error('Teacher account is used in class');
       }
       return await this.userRepository.update({ id }, data);
@@ -357,11 +353,11 @@ export class UserService {
   async checkUserIsUsed(userId: string): Promise<boolean> {
     //const isUsed = await this
     const isUsed = await this.dataSource
-    .getRepository('class')
-    .createQueryBuilder('class')
-    .where('class.teacherId = :userId', { userId })
-    .getOne();
-    
+      .getRepository('class')
+      .createQueryBuilder('class')
+      .where('class.teacherId = :userId', { userId })
+      .getOne();
+
     return isUsed ? true : false;
   }
 
@@ -442,5 +438,4 @@ export class UserService {
     const re = /^\d{4,}$/;
     return re.test(code);
   }
-
 }
