@@ -25,9 +25,9 @@ export class CourseService {
       if (course) {
         throw new Error('You can not create duplicate course in a semester');
       }
-      if (!(await this.checkSemesterStart(data.semesterId))) {
-        throw new Error('Semester started, can not create course in this semester');
-      }
+      // if (!(await this.checkSemesterStart(data.semesterId))) {
+      //   throw new Error('Semester started, can not create course in this semester');
+      // }
 
       const newCourse = this.courseRepository.create({
         ...data,
@@ -196,7 +196,6 @@ export class CourseService {
       throw new Error(error);
     }
   }
-
 
   async checkSemesterIsUsed(courseId: string) {
     // kiểm tra xem semester có được sử dụng trong course không

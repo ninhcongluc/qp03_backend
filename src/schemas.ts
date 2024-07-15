@@ -56,7 +56,7 @@ const createCourse = Joi.object().keys({
   semesterId: Joi.string().required(),
   code: Joi.string().required(),
   name: Joi.string().required(),
-  description: Joi.string().optional(),
+  description: Joi.string().optional()
 });
 
 const updateCourse = Joi.object().keys({
@@ -74,7 +74,7 @@ const createQuiz = Joi.object().keys({
   endDate: Joi.date().required(),
   timeLimitMinutes: Joi.number().required(),
   isLimitedAttempts: Joi.boolean().optional(),
-  maxAttempts: Joi.number().optional(),
+  maxAttempts: Joi.number().optional().allow(null),
   score: Joi.number().required(),
   showAnswer: Joi.boolean().optional()
 });
@@ -87,7 +87,7 @@ const updateQuiz = Joi.object().keys({
   endDate: Joi.date().optional(),
   timeLimitMinutes: Joi.number().optional(),
   isLimitedAttempts: Joi.boolean().optional(),
-  maxAttempts: Joi.number().optional(),
+  maxAttempts: Joi.number().optional().allow(null),
   score: Joi.number().optional(),
   showAnswer: Joi.boolean().optional()
 });
@@ -100,7 +100,7 @@ const createClass = Joi.object().keys({
   description: Joi.string().optional(),
   maxParticipants: Joi.number().required(),
   startDate: Joi.date().required(),
-  endDate: Joi.date().required(),
+  endDate: Joi.date().required()
 });
 
 const updateClass = Joi.object().keys({
@@ -124,8 +124,7 @@ export default {
   '/course/create': createCourse,
   '/quiz/create': createQuiz,
   '/quiz/update': updateQuiz,
-  '/profile/editProfile':updateProfile,
-  '/course/update': updateCourse, 
+  '/course/update': updateCourse,
   '/class/create': createClass,
   '/class/update': updateClass
 } as { [key: string]: ObjectSchema };

@@ -34,6 +34,11 @@ export class QuizService {
         throw new Error('Class not found');
       }
 
+      const duplicateName = await this.quizRepository.findOne({ where: { name: data.name, classId: data.classId } });
+      if (duplicateName) {
+        throw new Error('Quiz name is existed');
+      }
+
       const newQuiz = this.quizRepository.create(data);
       return await this.quizRepository.save(newQuiz);
     } catch (error) {
@@ -102,9 +107,9 @@ export class QuizService {
     }
   }
 
-  async detailQuiz(quizId: String) {
+  async detailQuiz(quizId) {
     try {
-      return await this.quizRepository.findOne({ where: { id: String(quizId) } });
+      return await this.quizRepository.findOne({ where: { id: quizId } });
     } catch (error) {
       return error;
     }
@@ -127,6 +132,15 @@ export class QuizService {
       const quiz = await this.quizRepository.findOne({ where: { id } });
       if (!quiz) {
         throw new Error('Quiz not found');
+      }
+      const questions = await this.questionRepository.find({ where: { quizId: id } });
+      if (questions.length > 0) {
+        throw new Error('Quiz has questions, remove questions first');
+      }
+      // if quiz is used -> can not delete quiz
+      const studentQuizResult = await this.studentQuizResultRepository.findOne({ where: { quizId: id } });
+      if (studentQuizResult) {
+        throw new Error('Quiz is used in system');
       }
       return await this.quizRepository.delete({ id });
     } catch (error) {
@@ -207,6 +221,7 @@ export class QuizService {
 
       for (const question of questionsToDelete) {
         await this.answerOptionRepository.delete({ questionId: question.id });
+        await this.questionBankRepository.delete({ questionId: question.id });
         await this.questionRepository.delete(question.id);
       }
 
@@ -247,7 +262,6 @@ export class QuizService {
       };
     });
 
-    console.log('250', prepareData);
     await this.questionBankRepository.save(prepareData);
   }
 
@@ -257,17 +271,23 @@ export class QuizService {
 
   async listStudentQuizResult(quizId: string) {
     try {
-      const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
-      if (!quiz) {
-        throw new Error('Quiz not found');
-      }
+      const quiz = await this.quizRepository.findOne({
+        where: { id: quizId },
+        relations: ['questions']
+      });
+      const numberOfQuestions = quiz.questions.length;
 
-      return await this.quizRepository
+      const result = await this.quizRepository
         .createQueryBuilder('quiz')
         .leftJoinAndSelect('quiz.studentQuizResults', 'studentQuizResults')
         .where('quiz.id = :quizId', { quizId })
         .orderBy('studentQuizResults.submitTime', 'ASC')
         .getOne();
+
+      return {
+        ...result,
+        numberOfQuestions
+      };
     } catch (error) {
       return error;
     }
@@ -458,6 +478,50 @@ export class QuizService {
       }, []);
 
       return uniqueQuestions;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getStudentGrades(quizId: string) {
+    try {
+      const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+      if (!quiz) {
+        throw new Error('Quiz not found');
+      }
+
+      const studentQuizResults = await this.studentQuizResultRepository
+        .createQueryBuilder('result')
+        .innerJoin('result.student', 'student')
+        .leftJoin('result.quiz', 'quiz')
+        .where('result.quizId = :quizId AND result.status = :status', { quizId, status: StudentQuizStatus.DONE })
+        .andWhere(
+          `result."submitTime" = (SELECT MAX("submitTime") FROM student_quiz_results WHERE "studentId" = result."studentId" AND "quizId" = :quizId)`,
+          { quizId }
+        )
+        .select([
+          'result.id',
+          'result.studentId',
+          'result.status',
+          'student.firstName',
+          'student.lastName',
+          'result.score',
+          'result.numberCorrectAnswers',
+          'result.submitTime',
+          'quiz.name'
+        ])
+        .getMany();
+
+      return studentQuizResults.map(result => ({
+        id: result.id,
+        quizName: result?.quiz.name,
+        studentId: result.studentId,
+        status: result.status,
+        studentName: `${result.student.firstName} ${result.student.lastName}`,
+        score: result.score,
+        numberCorrectAnswers: result.numberCorrectAnswers,
+        submitTime: result.submitTime
+      }));
     } catch (error) {
       throw error;
     }

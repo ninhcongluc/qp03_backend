@@ -223,4 +223,25 @@ export class UserController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+  
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const email = req.body.email;
+      const response = await this.userService.forgotPassword(email);
+      return res.status(200).send({ message: 'Send mail Successful', status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+    async resetPassword(req: Request, res: Response) {
+      try {
+        const { email, otpCode, newPassword } = req.body;
+        const response = await this.userService.resetPassword( {email, otpCode, newPassword });
+        return res.status(200).send({ message: 'Password reset successful' });
+      } catch (error) {
+        return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+      }
+    }
+  
 }
