@@ -186,6 +186,12 @@ export class QuizService {
 
   async saveAsDraft(quizId: string, userId: string, incomingQuestions: any, isSubmit = false) {
     try {
+      //validate data
+      const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+      if (!quiz) {
+        throw new Error('Quiz not found');
+      }
+      await this.validateQAData(quiz, incomingQuestions);
       const existingQuestions = (await this.listQuestionAnswers(quizId)).questions;
 
       const existingQuestionIds = existingQuestions.map(q => q.id);
@@ -200,20 +206,31 @@ export class QuizService {
 
       for (const question of questionsToCreate) {
         delete question.id;
-        const createdQuestion = await this.questionRepository.save({ ...question, quizId });
+        const createdQuestion = await this.questionRepository.save({
+          ...question,
+          score: Number(question.score),
+          quizId
+        });
         newQuestionIds.push(createdQuestion.id);
         for (const answer of question.answerOptions) {
-          await this.answerOptionRepository.save({ ...answer, questionId: createdQuestion.id });
+          await this.answerOptionRepository.save({
+            ...answer,
+            score: Number(answer.score),
+            questionId: createdQuestion.id
+          });
         }
       }
 
       for (const question of questionsToUpdate) {
-        await this.questionRepository.update({ id: question.id }, { text: question.text, type: question.type });
+        await this.questionRepository.update(
+          { id: question.id },
+          { text: question.text, type: question.type, score: Number(question.score) }
+        );
         for (const answer of question.answerOptions) {
           if (existingAnswerIds.includes(answer.id)) {
-            await this.answerOptionRepository.update({ id: answer.id }, { ...answer });
+            await this.answerOptionRepository.update({ id: answer.id }, { ...answer, score: Number(answer.score) });
           } else {
-            await this.answerOptionRepository.save({ ...answer, questionId: question.id });
+            await this.answerOptionRepository.save({ ...answer, score: Number(answer.score), questionId: question.id });
           }
         }
       }
@@ -241,6 +258,40 @@ export class QuizService {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async validateQAData(quiz, questions) {
+    const quizScore = Number(quiz.score);
+    let totalQuestionScore = 0;
+    for (let i = 0; i < questions.length; i++) {
+      const answers = questions[i].answerOptions;
+      const scorePerQuestion = Number(questions[i].score);
+      totalQuestionScore += scorePerQuestion;
+      const haveCorrectAnswer = answers.some(answer => answer.isCorrect === true);
+      if (!haveCorrectAnswer) {
+        throw new Error('Each question have at least one correct answer.');
+      }
+
+      if (questions[i].type === 'multiple_choice') {
+        const totalScoreAnswerCorrect = answers.reduce((acc, answer) => {
+          console.log(answer);
+          if (answer.isCorrect) {
+            return acc + Number(answer?.score || 0);
+          }
+          return acc;
+        }, 0);
+        console.log('🚀 ~ QuizService ~ totalScoreAnswerCorrect ~ totalScoreAnswerCorrect:', totalScoreAnswerCorrect);
+
+        if (totalScoreAnswerCorrect !== scorePerQuestion) {
+          throw new Error('Total score of correct answer must be equal to score of question');
+        }
+      }
+    }
+    if (totalQuestionScore !== quizScore) {
+      throw new Error('Total score of questions must be equal to score of quiz');
+    }
+
+    return true;
   }
 
   async saveQuestionToBanks(userId: string, quizId: string, questionIds: string[]) {

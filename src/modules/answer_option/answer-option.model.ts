@@ -15,6 +15,9 @@ export class AnswerOption {
   @Column({ type: 'boolean', default: false })
   isCorrect: boolean;
 
+  @Column({ type: 'float', default: 0 })
+  score: number;
+
   @Column({ type: 'timestamp', default: new Date() })
   createdAt?: Date;
 

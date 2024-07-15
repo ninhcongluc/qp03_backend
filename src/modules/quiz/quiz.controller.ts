@@ -118,7 +118,6 @@ export class QuizController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
-
   async startQuiz(req, res) {
     try {
       const quizId = req.params.id;

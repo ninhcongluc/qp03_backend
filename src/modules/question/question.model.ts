@@ -17,6 +17,9 @@ export class Question {
   @Column()
   text: string;
 
+  @Column({ type: 'float', default: 0 })
+  score: number;
+
   @Column({ nullable: false })
   @Column({ nullable: true })
   file?: string;
