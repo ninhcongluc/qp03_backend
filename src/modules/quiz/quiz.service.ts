@@ -369,6 +369,7 @@ export class QuizService {
 
     studentQuizHistory.answers = this.parseAnswers(answers);
 
+    //Calculate scores
     for (const { questionId, answerOptionIds } of studentQuizHistory.answers) {
       const question = await this.questionRepository.findOne({
         where: {
@@ -380,21 +381,27 @@ export class QuizService {
 
       const correctAnswers = question.answerOptions.filter(option => option.isCorrect).map(option => option.id);
       const isMultipleChoice = question.type === 'multiple_choice';
-
-      if (isMultipleChoice) {
-        const correctCount = answerOptionIds.filter(id => correctAnswers.includes(id)).length;
-        const incorrectCount = answerOptionIds.length - correctCount;
-
-        if (correctCount === correctAnswers.length && incorrectCount === 0) {
-          totalScore += scorePerQuestion;
+      if (!isMultipleChoice) {
+        const correctAnswer = correctAnswers[0];
+        if (correctAnswer === answerOptionIds[0]) {
+          totalScore += question.score;
           numberCorrectAnswers++;
-        } else if (correctCount > 0 && incorrectCount === 0) {
-          totalScore += (scorePerQuestion * correctCount) / correctAnswers.length;
         }
       } else {
-        if (correctAnswers.includes(answerOptionIds[0])) {
-          totalScore += scorePerQuestion;
+        const correctCount = answerOptionIds.filter(id => correctAnswers.includes(id)).length;
+        const incorrectCount = answerOptionIds.length - correctCount;
+        if (correctCount === correctAnswers.length && incorrectCount === 0) {
+          totalScore += question.score;
           numberCorrectAnswers++;
+        } else if (correctCount > 0 && incorrectCount === 0) {
+          //total correct score answer
+          const correctScore = question.answerOptions.reduce((acc, option) => {
+            if (correctAnswers.includes(option.id)) {
+              return acc + option.score;
+            }
+            return acc;
+          }, 0);
+          totalScore += correctScore;
         }
       }
     }
