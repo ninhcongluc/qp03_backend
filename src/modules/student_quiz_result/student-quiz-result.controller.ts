@@ -10,7 +10,12 @@ export class StudentQuizResultController {
       const userId = req.user._id;
       const classId = String(req.params.classId);
       const quizId = String(req.params.quizId);
-      const results = await this.studentQuizResultService.listStudentQuizResultHistory(userId, classId, quizId, req.query);
+      const results = await this.studentQuizResultService.listStudentQuizResultHistory(
+        userId,
+        classId,
+        quizId,
+        req.query
+      );
       return res.status(200).send({ data: results, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
@@ -36,6 +41,16 @@ export class StudentQuizResultController {
       const quizId = String(req.params.quizId);
       const doQuiz = await this.studentQuizResultService.getDoQuiz(userId, classId, quizId, req.query);
       return res.status(200).send({ data: doQuiz, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getStudentGrades(req, res) {
+    try {
+      const studentId = req.user._id;
+      const grades = await this.studentQuizResultService.getStudentGrades(studentId);
+      return res.status(200).send({ data: grades, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
