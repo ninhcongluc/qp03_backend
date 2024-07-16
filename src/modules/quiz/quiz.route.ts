@@ -130,4 +130,9 @@ quizRouter.get(
   }
 );
 
+//check quiz is taken by student
+quizRouter.get('/quiz/:id/check-quiz', authentication, (req: Request, res: Response) => {
+  return quizController.checkQuizIsTaken(req, res);
+});
+
 export default quizRouter;

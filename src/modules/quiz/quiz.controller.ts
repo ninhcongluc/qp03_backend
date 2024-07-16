@@ -8,7 +8,7 @@ export class QuizController {
 
   async createQuiz(req: Request, res: Response) {
     try {
-      const { startDate, endDate, timeLimitMinutes, score } = req.body;
+      const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
       if (startDate > endDate) {
         throw new Error('End date must be greater than start date');
       }
@@ -18,6 +18,10 @@ export class QuizController {
       console.log(score);
       if (score !== 10 && score !== 100) {
         throw new Error('Score should be 10 or 100');
+      }
+
+      if (isLimitedAttempts && maxAttempts < 1) {
+        throw new Error('Max attempts must be greater than 0');
       }
 
       const newQuiz = await this.quizService.createQuiz(req.body);
@@ -88,6 +92,20 @@ export class QuizController {
   async updateQuiz(req: Request, res: Response) {
     try {
       const id = req.params.id;
+      const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
+      if (startDate > endDate) {
+        throw new Error('End date must be greater than start date');
+      }
+      if (timeLimitMinutes < 0) {
+        throw new Error('Invalid time limit');
+      }
+      if (score !== 10 && score !== 100) {
+        throw new Error('Score should be 10 or 100');
+      }
+
+      if (isLimitedAttempts && maxAttempts < 1) {
+        throw new Error('Max attempts must be greater than 0');
+      }
 
       const updatedQuiz = await this.quizService.updateQuiz(id, req.body);
       return res.status(201).send({ data: updatedQuiz, status: StatusCodes.OK });
@@ -204,6 +222,16 @@ export class QuizController {
     try {
       const quizId = req.params.id;
       const result = await this.quizService.getStudentGrades(quizId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async checkQuizIsTaken(req, res) {
+    try {
+      const quizId = req.params.id;
+      const result = await this.quizService.checkQuizIsTaken(quizId);
       return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });

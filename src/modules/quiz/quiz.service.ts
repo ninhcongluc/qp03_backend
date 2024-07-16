@@ -52,7 +52,19 @@ export class QuizService {
       if (!classExisted) {
         throw new Error('Class not found');
       }
-      return await this.quizRepository.find({ where: { classId: String(classId) }, order: { startDate: 'DESC' } });
+      const quizList = await this.quizRepository.find({
+        where: { classId: String(classId) },
+        order: { createdAt: 'DESC' }
+      });
+
+      const result = await Promise.all(
+        quizList.map(async quiz => {
+          const isTaken = await this.checkQuizIsTaken(quiz.id);
+          return { ...quiz, isTaken };
+        })
+      );
+
+      return result;
     } catch (error) {
       return error;
     }
@@ -584,6 +596,23 @@ export class QuizService {
         numberCorrectAnswers: result.numberCorrectAnswers,
         submitTime: result.submitTime
       }));
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async checkQuizIsTaken(quizId: string) {
+    try {
+      const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+      if (!quiz) {
+        throw new Error('Quiz not found');
+      }
+
+      const studentQuizResult = await this.studentQuizResultRepository.findOne({
+        where: { quizId }
+      });
+
+      return !!studentQuizResult;
     } catch (error) {
       throw error;
     }

@@ -63,9 +63,9 @@ const createQuiz = Joi.object().keys({
   description: Joi.string().optional(),
   startDate: Joi.date().required(),
   endDate: Joi.date().required(),
-  timeLimitMinutes: Joi.number().required(),
+  timeLimitMinutes: Joi.number().integer().min(1).required(),
   isLimitedAttempts: Joi.boolean().optional(),
-  maxAttempts: Joi.number().optional().allow(null),
+  maxAttempts: Joi.number().integer().optional().allow(null),
   score: Joi.number().required(),
   showAnswer: Joi.boolean().optional()
 });
@@ -76,9 +76,9 @@ const updateQuiz = Joi.object().keys({
   description: Joi.string().optional(),
   startDate: Joi.date().optional(),
   endDate: Joi.date().optional(),
-  timeLimitMinutes: Joi.number().optional(),
+  timeLimitMinutes: Joi.number().integer().min(1).required(),
   isLimitedAttempts: Joi.boolean().optional(),
-  maxAttempts: Joi.number().optional().allow(null),
+  maxAttempts: Joi.number().integer().optional().allow(null),
   score: Joi.number().optional(),
   showAnswer: Joi.boolean().optional()
 });
