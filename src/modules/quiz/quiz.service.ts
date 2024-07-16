@@ -186,12 +186,16 @@ export class QuizService {
 
   async saveAsDraft(quizId: string, userId: string, incomingQuestions: any, isSubmit = false) {
     try {
+      console.log('incomming question', incomingQuestions);
       //validate data
       const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
       if (!quiz) {
         throw new Error('Quiz not found');
       }
-      await this.validateQAData(quiz, incomingQuestions);
+      if (incomingQuestions.length > 0 && quiz.status === QuizStatus.SUBMITTED) {
+        console.log('validate');
+        await this.validateQAScore(quiz, incomingQuestions);
+      }
       const existingQuestions = (await this.listQuestionAnswers(quizId)).questions;
 
       const existingQuestionIds = existingQuestions.map(q => q.id);
@@ -260,7 +264,7 @@ export class QuizService {
     }
   }
 
-  async validateQAData(quiz, questions) {
+  async validateQAScore(quiz, questions) {
     const quizScore = Number(quiz.score);
     let totalQuestionScore = 0;
     for (let i = 0; i < questions.length; i++) {
@@ -280,7 +284,6 @@ export class QuizService {
           }
           return acc;
         }, 0);
-        console.log('🚀 ~ QuizService ~ totalScoreAnswerCorrect ~ totalScoreAnswerCorrect:', totalScoreAnswerCorrect);
 
         if (totalScoreAnswerCorrect !== scorePerQuestion) {
           throw new Error('Total score of correct answer must be equal to score of question');
@@ -380,28 +383,30 @@ export class QuizService {
       if (!question) continue;
 
       const correctAnswers = question.answerOptions.filter(option => option.isCorrect).map(option => option.id);
-      const isMultipleChoice = question.type === 'multiple_choice';
-      if (!isMultipleChoice) {
+      if (question.type === 'select_one') {
         const correctAnswer = correctAnswers[0];
         if (correctAnswer === answerOptionIds[0]) {
           totalScore += question.score;
           numberCorrectAnswers++;
         }
-      } else {
-        const correctCount = answerOptionIds.filter(id => correctAnswers.includes(id)).length;
-        const incorrectCount = answerOptionIds.length - correctCount;
-        if (correctCount === correctAnswers.length && incorrectCount === 0) {
-          totalScore += question.score;
+      }
+      if (question.type === 'multiple_choice') {
+        //nêú số lượng đáp án trả lời của học sinh khác với số số lượng đáp án đúng thì không tính điểm
+        if (correctAnswers.length !== answerOptionIds.length) {
+          continue;
+        }
+
+        // học sinh chọn được đáp án đúng nào thì sẽ được cộng điểm với đáp án đúng đó (điểm của từng answer đã được set)
+        for (const answerId of answerOptionIds) {
+          const answer = question.answerOptions.find(option => option.id === answerId);
+          if (answer && answer.isCorrect) {
+            totalScore += answer.score;
+          }
+        }
+
+        // nếu học sinh chọn đúng số lượng câu và đúng hết thì số câu trả lời đúng sẽ tăng lên 1
+        if (correctAnswers.every(answer => answerOptionIds.includes(answer))) {
           numberCorrectAnswers++;
-        } else if (correctCount > 0 && incorrectCount === 0) {
-          //total correct score answer
-          const correctScore = question.answerOptions.reduce((acc, option) => {
-            if (correctAnswers.includes(option.id)) {
-              return acc + option.score;
-            }
-            return acc;
-          }, 0);
-          totalScore += correctScore;
         }
       }
     }
