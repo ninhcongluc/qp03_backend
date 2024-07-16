@@ -1,4 +1,4 @@
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Not, Repository } from 'typeorm';
 import { Quiz, QuizStatus } from './quiz.model';
 import { Class } from '../class/class.model';
 import { AppObject } from '../../commons/consts/app.objects';
@@ -165,6 +165,14 @@ export class QuizService {
       if (!quiz) {
         throw new Error('Quiz not found');
       }
+      // not update name is existed
+      const duplicateName = await this.quizRepository.findOne({
+        where: { name: data.name, classId: quiz.classId, id: Not(id) }
+      });
+      if (duplicateName) {
+        throw new Error('Quiz name is existed');
+      }
+
       return await this.quizRepository.update(
         { id },
         {
