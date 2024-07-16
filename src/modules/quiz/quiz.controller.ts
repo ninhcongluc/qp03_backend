@@ -9,13 +9,12 @@ export class QuizController {
   async createQuiz(req: Request, res: Response) {
     try {
       const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
-      if (startDate > endDate) {
+      if (startDate >= endDate) {
         throw new Error('End date must be greater than start date');
       }
       if (timeLimitMinutes < 0) {
         throw new Error('Invalid time limit');
       }
-      console.log(score);
       if (score !== 10 && score !== 100) {
         throw new Error('Score should be 10 or 100');
       }
@@ -93,7 +92,7 @@ export class QuizController {
     try {
       const id = req.params.id;
       const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
-      if (startDate > endDate) {
+      if (startDate >= endDate) {
         throw new Error('End date must be greater than start date');
       }
       if (timeLimitMinutes < 0) {
