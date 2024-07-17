@@ -34,7 +34,7 @@ export class Quiz {
   @Column({ type: 'integer', default: 10 })
   score: number;
 
-  @Column({ type: 'integer', nullable: false })
+  @Column({ type: 'float', nullable: true })
   timeLimitMinutes: number;
 
   @Column({ type: 'boolean', default: false })
