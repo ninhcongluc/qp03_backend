@@ -9,6 +9,10 @@ export class QuizController {
   async createQuiz(req: Request, res: Response) {
     try {
       const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
+      //check startDate < current date
+      if (new Date(startDate) < new Date()) {
+        throw new Error('Start date must be greater than current date');
+      }
       if (startDate >= endDate) {
         throw new Error('End date must be greater than start date');
       }
@@ -92,6 +96,9 @@ export class QuizController {
     try {
       const id = req.params.id;
       const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
+      if (new Date(startDate) < new Date()) {
+        throw new Error('Start date must be greater than current date');
+      }
       if (startDate >= endDate) {
         throw new Error('End date must be greater than start date');
       }

@@ -43,7 +43,7 @@ export class StudentQuizHistory {
   quiz: Quiz;
 
   @ManyToOne(() => User)
-  student: User;
+  user: User;
 
   @OneToOne(() => StudentQuizResult)
   studentQuizResult: StudentQuizResult;
