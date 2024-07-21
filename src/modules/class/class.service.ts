@@ -48,7 +48,14 @@ export class ClassService {
       if (timeClass < minDuration) {
         throw new Error('Class must last at least 40 days');
       }
-
+      const course = await this.dataSource.getRepository('Course').findOne({ where: { id: data.courseId } });
+      const semester = await this.dataSource.getRepository('Semester').findOne({ where: { id: course.semesterId }});
+      if (semester.startDate > startDate || semester.endDate < endDate) {
+        throw new Error('Class must be in semester');
+      }
+      if(semester.startDate < new Date()){
+        throw new Error('Semester started, can not create class in this semester');
+      }
       if (await this.checkTimeClass(startDate, endDate, data.courseId)) {
         throw new Error(`Class is overlapping with another class ${data.courseId}`);
       }

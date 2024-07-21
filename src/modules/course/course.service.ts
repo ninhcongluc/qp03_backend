@@ -11,8 +11,14 @@ export class CourseService {
 
   async createCourse(data) {
     try {
-      if (!(data.code.length === 6)) {
-        throw new Error('Code must be 6 characters long');
+      if (!(data.code.length >= 6 && data.code.length <= 8)) {
+        throw new Error('Code must be 6 - 8 characters.');
+      }
+      if(!(data.name.length >= 10 && data.name.length <= 50)){
+        throw new Error('Name must be 10 - 50 characters.');
+      }
+      if(!(data.description.length >= 1 && data.description.length <= 80)){
+        throw new Error('Description must be 1 - 80 characters.');
       }
       // validate khong duoc tao trung course trong 1 ky
       const course = await this.courseRepository.findOne({
@@ -25,9 +31,9 @@ export class CourseService {
       if (course) {
         throw new Error('You can not create duplicate course in a semester');
       }
-      // if (!(await this.checkSemesterStart(data.semesterId))) {
-      //   throw new Error('Semester started, can not create course in this semester');
-      // }
+      if (!(await this.checkSemesterStart(data.semesterId))) {
+        throw new Error('Semester started, can not create course in this semester');
+      }
 
       const newCourse = this.courseRepository.create({
         ...data,
@@ -151,6 +157,15 @@ export class CourseService {
       if (isSemesterUsed && data.isActive === false) {
         throw new Error('Course is used in class');
       }
+
+      // if(course.isActive){
+      //   throw new Error('Course is active');
+      // }
+
+      if (!(await this.checkSemesterStart(data.semesterId))) {
+        throw new Error('Semester ended, can not create course in this semester');
+      }
+
       return await this.courseRepository.save({ ...course, ...data });
     } catch (error) {
       throw new Error(error);

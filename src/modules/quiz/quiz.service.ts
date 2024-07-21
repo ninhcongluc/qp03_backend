@@ -464,6 +464,7 @@ export class QuizService {
     const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
     if (!quiz) throw new Error('Quiz not found');
 
+    // eslint-disable-next-line prefer-const
     let studentQuizHistory = await this.studentQuizHistoryRepository.findOne({
       where: {
         userId,
@@ -500,6 +501,7 @@ export class QuizService {
   }
 
   async getStudentQuizHistory(quizResultId: string) {
+    // eslint-disable-next-line no-useless-catch
     try {
       const [quizHistory, quizResult] = await Promise.all([
         this.studentQuizHistoryRepository.findOne({ where: { studentQuizResultId: quizResultId } }),
@@ -527,6 +529,7 @@ export class QuizService {
   }
 
   async getQuestionBanks(quizId: string, userId: string) {
+    // eslint-disable-next-line no-useless-catch
     try {
       const quizData = await this.quizRepository.findOne({
         where: { id: quizId },
@@ -566,6 +569,7 @@ export class QuizService {
   }
 
   async getStudentGrades(quizId: string) {
+    // eslint-disable-next-line no-useless-catch
     try {
       const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
       if (!quiz) {
