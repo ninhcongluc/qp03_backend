@@ -101,13 +101,13 @@ export class UserService {
   async resetPassword(data: { email: string; otpCode: string; newPassword: string }) {
     try {
       const { email, otpCode, newPassword } = data;
-  
+
       // Find user with email
       const user = await this.userRepository.findOne({ where: { email } });
       if (!user) {
         throw new Error('User not found');
       }
-  
+
       // Check OTP code
       if (user.otpCode !== otpCode) {
         throw new Error('OTP code is incorrect');
@@ -115,17 +115,17 @@ export class UserService {
       if (user.otpExpiredAt < new Date()) {
         throw new Error('OTP code is expired');
       }
-  
+
       // Validate newPassword length
       if (newPassword.length < 8) {
         throw new Error('Password must be at least 8 characters');
       }
-  
+
       // Update password
       const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
       const hashPassword = bcrypt.hashSync(newPassword, salt);
       await this.userRepository.update({ id: user.id }, { password: hashPassword, otpCode: null, otpExpiredAt: null });
-      } catch (error) {
+    } catch (error) {
       throw new Error(error.message);
     }
   }
@@ -219,6 +219,22 @@ export class UserService {
   async createTeacherAccount(data) {
     try {
       const email = data.email;
+      if(!(data.firstName.length >= 2 && data.firstName.length <= 50)){
+        throw new Error('First name must be 2 - 50 characters.');
+      }
+      if(!(data.lastName.length >= 2 && data.lastName.length <= 50)){
+        throw new Error('Last name must be 2 - 50 characters.');
+      }
+      if (data.code.length !== 8) {
+        throw new Error('Code must be 8 characters.');
+      }
+      if (data.phoneNumber.length !== 10) {
+        throw new Error('Code must be 10 characters.');
+      }
+      const date = new Date();
+      if(data.dateOfBirth > date){
+        throw new Error('Date of birth must be less than current date.');
+      }
       const userExisted = await this.userRepository.findOne({ where: { email } });
       if (userExisted) {
         throw new Error('Email already exists');
@@ -231,7 +247,7 @@ export class UserService {
       const newUser = this.userRepository.create({
         ...data,
         roleId: 3,
-        isActive: false
+        isActive: true
       });
       return await this.userRepository.save(newUser);
     } catch (error) {
@@ -340,10 +356,12 @@ export class UserService {
       if (!user) {
         throw new Error('User not found');
       }
-
-      if ((await this.checkUserIsUsed(id)) && !data.isActive) {
-        throw new Error('Teacher account is used in class');
+      if (data.isActive === false) {
+        if ((await this.checkUserIsUsed(id))) {
+          throw new Error('Teacher account is used in class');
+        }
       }
+
       return await this.userRepository.update({ id }, data);
     } catch (error) {
       throw new Error(error);
