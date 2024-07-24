@@ -291,6 +291,10 @@ export class QuizService {
       const scorePerQuestion = Number(questions[i].score);
       totalQuestionScore += scorePerQuestion;
       const haveCorrectAnswer = answers.some(answer => answer.isCorrect === true);
+
+      if (scorePerQuestion <= 0) {
+        throw new Error('Each question must have score greater than 0.');
+      }
       if (!haveCorrectAnswer) {
         throw new Error('Each question have at least one correct answer.');
       }
@@ -298,6 +302,9 @@ export class QuizService {
       if (questions[i].type === 'multiple_choice') {
         const totalScoreAnswerCorrect = answers.reduce((acc, answer) => {
           console.log(answer);
+          if (answer.isCorrect && answer.score <= 0) {
+            throw new Error('Score of correct answer must be greater than 0');
+          }
           if (answer.isCorrect) {
             return acc + Number(answer?.score || 0);
           }
