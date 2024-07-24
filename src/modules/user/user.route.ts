@@ -90,9 +90,14 @@ userRouter.get('/teacher/:id', authentication, authorization(['manager', 'teache
   return userController.getDetailUser(req, res);
 });
 
-userRouter.get('/teacher-details/:id', authentication, authorization(['manager', 'teacher']), (req: Request, res: Response) => {
-  return userController.getTeacherDetails(req, res);
-});
+userRouter.get(
+  '/teacher-details/:id',
+  authentication,
+  authorization(['manager', 'teacher']),
+  (req: Request, res: Response) => {
+    return userController.getTeacherDetails(req, res);
+  }
+);
 
 const uploadDir = path.join('src', 'uploads');
 
@@ -113,48 +118,20 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Endpoint to handle Excel file upload
-userRouter.post('/teacher/import-student/:classId', upload.single('file'), async (req, res) => {
-  const classId = req.params.classId;
-  try {
-    const filePath = req.file.path;
-    const workbook = xlsx.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(sheet);
-    // fs.promises.unlink(filePath).catch(console.error);
-
-    console.log('Data:', data);
-
-    // Process the data (e.g., save to a database)
-    await userController.importStudent(data, classId);
-
-    res.status(200).json({ message: 'File uploaded and processed successfully', data });
-  } catch (error) {
-    console.error('Error processing file:', error);
-    res.status(500).json({ message: 'Error processing file', error });
-  }
+userRouter.post('/teacher/export-students/:classId', async (req, res) => {
+  return userController.exportStudents(req, res);
+});
+userRouter.post('/teacher/import-student/:classId', upload.single('file'), (req: Request, res: Response) => {
+  return userController.importTeacher(req, res);
 });
 
-userRouter.post('/manager/import-teacher', upload.single('file'), async (req, res) => {
-  try {
-    const filePath = req.file.path;
-    const workbook = xlsx.readFile(filePath, {cellDates: true });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(sheet);
-    await fs.promises.unlink(filePath).catch(console.error);
-
-    console.log('Data:', data);
-    // Process the data (e.g., save to a database)
-    await userController.importTeacher(data);
-
-    res.status(200).json({ message: 'File uploaded and processed successfully', data });
-  } catch (error) {
-    console.error('Error processing file:', error);
-    res.status(500).json({ message: 'Error processing file', error });
-  }
+userRouter.post('/manager/import-teacher', upload.single('file'), (req: Request, res: Response) => {
+  return userController.importTeacher(req, res);
 });
 
+userRouter.post('/manager/export-teachers', async (req, res) => {
+  return userController.exportTeachers(req, res);
+});
 
 userRouter.get('/student/:classId', (req: Request, res: Response) => {
   return userController.listStudentInClass(req, res);

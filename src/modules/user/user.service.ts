@@ -4,6 +4,7 @@ import { AppObject } from '../../commons/consts/app.objects';
 import * as bcrypt from 'bcrypt';
 import { exist, string } from 'joi';
 import { ClassParticipants } from '../class_participants/class-participants.model';
+import XLSX from 'xlsx';
 
 const EmailService = require('../../configs/send-mail');
 const emailService = new EmailService();
@@ -181,7 +182,6 @@ export class UserService {
     }
   }
 
-
   async getDetailUser(userId: string): Promise<User | null> {
     try {
       return await this.userRepository.findOne({ where: { id: userId } });
@@ -219,10 +219,10 @@ export class UserService {
   async createTeacherAccount(data) {
     try {
       const email = data.email;
-      if(!(data.firstName.length >= 2 && data.firstName.length <= 50)){
+      if (!(data.firstName.length >= 2 && data.firstName.length <= 50)) {
         throw new Error('First name must be 2 - 50 characters.');
       }
-      if(!(data.lastName.length >= 2 && data.lastName.length <= 50)){
+      if (!(data.lastName.length >= 2 && data.lastName.length <= 50)) {
         throw new Error('Last name must be 2 - 50 characters.');
       }
       if (data.code.length !== 8) {
@@ -232,7 +232,7 @@ export class UserService {
         throw new Error('Code must be 10 characters.');
       }
       const date = new Date();
-      if(data.dateOfBirth > date){
+      if (data.dateOfBirth > date) {
         throw new Error('Date of birth must be less than current date.');
       }
       const userExisted = await this.userRepository.findOne({ where: { email } });
@@ -279,60 +279,130 @@ export class UserService {
     }
   }
 
-  async importStudent(preparedData, classId) {
+  async exportStudentExcel(classId: string) {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet([]);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    const students = await this.listStudentInClass(classId);
+    const data = [
+      ['Code', 'Email', 'FirstName', 'LastName', 'Phone', 'DOB'],
+      ...students.map(student => [
+        student.code,
+        student.email,
+        student?.firstName || '',
+        student?.lastName || '',
+        student?.phoneNumber.trim() || '',
+        student?.dateOfBirth || ''
+      ])
+    ];
+
+    XLSX.utils.sheet_add_aoa(worksheet, data, { origin: 'A1' });
+
+    return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  }
+
+  async importStudent(data, classId: string) {
     try {
-      console.log('preparedData', preparedData);
+      this.validateDataExcel(data);
+      for (const row of data) {
+        const { Code, Email, FirstName, LastName, Phone, DOB } = row;
+        const userCodeOrEmailExists = await this.userRepository.findOne({
+          where: [{ code: Code }, { email: Email }]
+        });
+        // save user not existed, if existed -> continue
+        if (!userCodeOrEmailExists) {
+          const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
+          const hashPassword = bcrypt.hashSync('12345678', salt);
 
-      // Remove all students from the class
-      const oldParticipants = await this.classParticipantsRepository.find({ where: { classId: classId } });
-      const participantIds = oldParticipants.map(participant => participant.id);
-      await this.classParticipantsRepository.delete({ id: In(participantIds) });
+          const preparedData = {
+            code: Code,
+            email: Email,
+            firstName: FirstName || '',
+            lastName: LastName || '',
+            phoneNumber: Phone || '',
+            dateOfBirth: DOB || '',
+            isActive: true,
+            password: hashPassword,
+            roleId: AppObject.ROLE_CODE.STUDENT
+          };
 
-      const newUsers = await Promise.all(
-        preparedData.map(async user => {
-          // Check if a user with the same email already exists
-          let existingUser = await this.userRepository.findOne({ where: { email: user.email } });
-
-          if (!existingUser) {
-            // If the user does not exist, create a new user
-            existingUser = await this.userRepository.save(user);
-          }
-
-          // Create a new class participant
-          const classParticipant = new ClassParticipants();
-          classParticipant.userId = existingUser.id;
-          classParticipant.classId = classId;
-          await this.classParticipantsRepository.save(classParticipant);
-
-          return existingUser;
-        })
-      );
+          const newStudent = await this.userRepository.save(preparedData);
+          const userClass = {
+            userId: newStudent.id,
+            classId
+          };
+          await this.classParticipantsRepository.save(userClass);
+        }
+      }
+      return 'Import data successfully';
     } catch (error) {
       throw new Error(error);
     }
   }
 
-  async importTeacher(preparedData) {
+  async importTeacher(data) {
     try {
-      console.log('preparedData', preparedData);
-      await Promise.all(
-        preparedData.map(async (user: User) => {
-          // Check if a user with the same email already exists
-          let existingUser = await this.userRepository.findOne({ where: { email: user.email } });
-          // Check if a user with the same code already exists
-          const existingCode = await this.userRepository.findOne({ where: { code: user.code } });
+      this.validateDataExcel(data);
 
-          if (!existingUser && !existingCode) {
-            // If the user does not exist, create a new user
-            existingUser = await this.userRepository.save(user);
-          }
+      for (const row of data) {
+        const { Code, Email, FirstName, LastName, Phone, DOB } = row;
+        const userCodeOrEmailExists = await this.userRepository.findOne({
+          where: [{ code: Code }, { email: Email }]
+        });
+        // save user not existed, if existed -> continue
+        if (!userCodeOrEmailExists) {
+          const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
+          const hashPassword = bcrypt.hashSync('12345678', salt);
 
-          return existingUser;
-        })
-      );
+          const preparedData = {
+            code: Code,
+            email: Email,
+            firstName: FirstName || '',
+            lastName: LastName || '',
+            phoneNumber: Phone || '',
+            dateOfBirth: DOB || '',
+            isActive: true,
+            password: hashPassword,
+            roleId: AppObject.ROLE_CODE.TEACHER
+          };
+
+          await this.userRepository.save(preparedData);
+        }
+      }
+      return 'Import data successfully';
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async exportExcel() {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet([]);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    const teachers = await this.userRepository.find({
+      where: {
+        roleId: 3,
+        isDeleted: false,
+        isActive: true
+      }
+    });
+
+    const data = [
+      ['Code', 'Email', 'FirstName', 'LastName', 'Phone', 'DOB'],
+      ...teachers.map(teacher => [
+        teacher.code,
+        teacher.email,
+        teacher?.firstName || '',
+        teacher?.lastName || '',
+        teacher?.phoneNumber.trim() || '',
+        teacher?.dateOfBirth || ''
+      ])
+    ];
+
+    XLSX.utils.sheet_add_aoa(worksheet, data, { origin: 'A1' });
+    console.log('workbook', workbook);
+
+    return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
   }
 
   async listStudentInClass(classId: string) {
@@ -357,7 +427,7 @@ export class UserService {
         throw new Error('User not found');
       }
       if (data.isActive === false) {
-        if ((await this.checkUserIsUsed(id))) {
+        if (await this.checkUserIsUsed(id)) {
           throw new Error('Teacher account is used in class');
         }
       }
@@ -455,5 +525,48 @@ export class UserService {
   validateCode(code) {
     const re = /^\d{4,}$/;
     return re.test(code);
+  }
+
+  validateDataExcel(data) {
+    const requiredColumns = ['Code', 'Email', 'FirstName', 'LastName', 'Phone', 'DOB'];
+    const header = Object.keys(data[0]);
+
+    // Validate header
+    for (const column of requiredColumns) {
+      if (!header.includes(column)) {
+        throw new Error(`Column "${column}" is missing`);
+      }
+    }
+
+    const codeSet = new Set();
+    const emailSet = new Set();
+    const phoneSet = new Set();
+    const errors = [];
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    data.forEach((row, index) => {
+      const { Code, Email, Phone } = row;
+      const lineNumber = index + 2;
+
+      // Validate required fields
+      if (!Code || Code.length < 1)
+        errors.push(`Line ${lineNumber}: Code is required and must be at least 1 character`);
+      if (!Email || !emailRegex.test(Email))
+        errors.push(`Line ${lineNumber}: Email is required and must be in a valid format`);
+
+      // Check for duplicate in the file
+      if (codeSet.has(Code)) errors.push(`Line ${lineNumber}: Duplicate Code: ${Code}`);
+      if (emailSet.has(Email)) errors.push(`Line ${lineNumber}: Duplicate Email: ${Email}`);
+      if (phoneSet.has(Phone)) errors.push(`Line ${lineNumber}: Duplicate Phone: ${Phone}`);
+
+      codeSet.add(Code);
+      emailSet.add(Email);
+      phoneSet.add(Phone);
+    });
+
+    if (errors.length > 0) {
+      throw new Error(errors.join(', '));
+    }
+    return true;
   }
 }

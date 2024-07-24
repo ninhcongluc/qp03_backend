@@ -2,9 +2,11 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { UserService } from './user.service';
 import { AppObject } from '../../commons/consts/app.objects';
+import xlsx from 'xlsx';
+import fs from 'fs';
 
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   async createManagerAccount(req: Request, res: Response) {
     try {
@@ -146,60 +148,69 @@ export class UserController {
     }
   }
 
-  async importStudent(data, classId) {
-    console.log(data);
-    const preparedData = data.map(item => {
-      return {
-        code: item['Code'],
-        email: item['Email'],
-        firstName: item['Name'],
-        phoneNumber: item['Phone'],
-        roleId: 4
-      };
-    });
-    return await this.userService.importStudent(preparedData, classId);
+  async exportStudents(req, res) {
+    try {
+      const { classId } = req.params;
+      const excelData = await this.userService.exportStudentExcel(classId);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=DanhSachSinhVien.xlsx');
+      res.send(excelData);
+    } catch (error) {
+      console.error('Error exporting Excel file:', error);
+      res.status(500).send('Error exporting Excel file');
+    }
   }
 
-  async importTeacher(data) {
+  async importStudent(req, res) {
     try {
-        const preparedData = [];
+      const { classId } = req.params;
+      if (!req.file) {
+        throw new Error('File not found');
+      }
+      const filePath = req.file.path;
+      const workbook = xlsx.readFile(filePath, { cellDates: true });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet);
+      await fs.promises.unlink(filePath).catch(console.error);
+      await this.userService.importStudent(data, classId);
 
-         for (const item of data) {
-        //     if (!item['Code']) {
-        //         return res.status(400).send({ error: 'Code is required', status: 'BAD_REQUEST' });
-        //     }
-            // if (!item['Email'] || !this.validateEmail(item['Email'])) {
-            //     return res.status(400).send({ error: 'Valid email is required', status: 'BAD_REQUEST' });
-            // }
-            // if (!item['firstName']) {
-            //     return res.status(400).send({ error: 'First name is required', status: 'BAD_REQUEST' });
-            // }
-            // if (!item['lastName']) {
-            //     return res.status(400).send({ error: 'Last name is required', status: 'BAD_REQUEST' });
-            // }
-            // if (!item['Phone'] || !this.validatePhoneNumber(item['Phone'])) {
-            //     return res.status(400).send({ error: 'Valid phone number is required', status: 'BAD_REQUEST' });
-            // }
-
-            preparedData.push({
-                code: item['Code'],
-                email: item['Email'],
-                firstName: item['firstName'],
-                lastName: item['lastName'],
-                phoneNumber: item['Phone'],
-                dateOfBirth: item['DOB'],
-                roleId: 3
-            });
-        }
-
-        // Call the userService to import teachers
-        return await this.userService.importTeacher(preparedData);
-       // return res.status(200).send({ message: 'Teachers imported successfully' });
-
+      res.status(200).send({ message: 'Import data successfully' });
     } catch (error) {
-       // return res.status(500).send({ error: error.message, status: 'INTERNAL_SERVER_ERROR' });
+      res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
-}
+  }
+
+  async importTeacher(req, res) {
+    try {
+      if (!req.file) {
+        throw new Error('File not found');
+      }
+      const filePath = req.file.path;
+      const workbook = xlsx.readFile(filePath, { cellDates: true });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet);
+      await fs.promises.unlink(filePath).catch(console.error);
+      await this.userService.importTeacher(data);
+
+      res.status(200).send({ message: 'Import data successfully' });
+    } catch (error) {
+      res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async exportTeachers(req, res) {
+    try {
+      const excelData = await this.userService.exportExcel();
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=DanhSachGV.xlsx');
+      res.send(excelData);
+    } catch (error) {
+      console.error('Error exporting Excel file:', error);
+      res.status(500).send('Error exporting Excel file');
+    }
+  }
 
   async getUserProfile(req, res) {
     try {
@@ -211,7 +222,7 @@ export class UserController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
-  
+
   async forgotPassword(req: Request, res: Response) {
     try {
       const email = req.body.email;
@@ -222,14 +233,13 @@ export class UserController {
     }
   }
 
-    async resetPassword(req: Request, res: Response) {
-      try {
-        const { email, otpCode, newPassword } = req.body;
-        const response = await this.userService.resetPassword( {email, otpCode, newPassword });
-        return res.status(200).send({ message: 'Password reset successful' });
-      } catch (error) {
-        return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
-      }
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { email, otpCode, newPassword } = req.body;
+      const response = await this.userService.resetPassword({ email, otpCode, newPassword });
+      return res.status(200).send({ message: 'Password reset successful' });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
-  
+  }
 }
