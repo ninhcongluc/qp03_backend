@@ -212,7 +212,7 @@ export class QuizService {
       if (!quiz) {
         throw new Error('Quiz not found');
       }
-      if (incomingQuestions.length > 0 && quiz.status === QuizStatus.SUBMITTED) {
+      if (incomingQuestions.length > 0 && isSubmit) {
         await this.validateQAScore(quiz, incomingQuestions);
       }
       const existingQuestions = (await this.listQuestionAnswers(quizId)).questions;
