@@ -8,7 +8,7 @@ export class Semester {
   @Column({ nullable: false })
   name: string;
 
-  @Column({ default: false })
+  @Column({ default: true })
   isActive: boolean;
 
   @Column({

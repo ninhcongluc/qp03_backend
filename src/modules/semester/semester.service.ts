@@ -47,13 +47,25 @@ export class SemesterService {
     }
   }
 
-  async listSemester() {
+  async listSemester(isActive: boolean) {
     try {
-      return await this.semesterRepository.find({
-        order: {
-          startDate: 'DESC'
-        }
-      });
+      // Auto inactivate semester if current date > endDate
+      await this.semesterRepository
+        .createQueryBuilder('semester')
+        .update()
+        .set({ isActive: false })
+        .where(`semester."endDate" < :currentDate`, { currentDate: new Date() })
+        .execute();
+
+      const qb = this.semesterRepository
+        .createQueryBuilder('semester')
+        .where('1=1')
+        .orderBy('semester.startDate', 'DESC')
+        .addOrderBy('semester.createdAt', 'DESC');
+      if (isActive) {
+        qb.andWhere('semester.isActive = :isActive', { isActive });
+      }
+      return await qb.getMany();
     } catch (error) {
       throw new Error(error);
     }
@@ -61,7 +73,6 @@ export class SemesterService {
 
   async deleteSemester(semesterId: string) {
     try {
-      
       const semester = await this.semesterRepository.findOne({
         where: {
           id: semesterId
@@ -70,8 +81,8 @@ export class SemesterService {
       if (!semester) {
         throw new Error('Semester is not exist');
       }
-      if(semester.isActive){
-          throw new Error('Semester is active');
+      if (semester.isActive) {
+        throw new Error('Semester is active');
       }
 
       return await this.semesterRepository.delete(semesterId);
@@ -81,14 +92,24 @@ export class SemesterService {
   }
 
   async updateSemester(semesterId: string, data) {
-    try{
+    try {
+      const semester = await this.semesterRepository.findOne({
+        where: {
+          id: semesterId
+        }
+      });
+      //if currentDate > endDate => can not active semester that is ended
+      if (data.isActive && new Date() > semester.endDate) {
+        throw new Error('Semester is ended. Can not active');
+      }
+
       const isSemesterUsed = await this.checkSemesterIsUsed(semesterId);
       if (isSemesterUsed && data.isActive === false) {
         throw new Error('Semester is used in course');
       }
 
       return await this.semesterRepository.update(semesterId, data);
-    }catch(error){
+    } catch (error) {
       throw new Error(error);
     }
   }
@@ -103,5 +124,4 @@ export class SemesterService {
 
     return course ? true : false;
   }
-
 }
