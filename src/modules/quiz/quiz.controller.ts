@@ -6,27 +6,31 @@ import { StudentQuizStatus } from '../student_quiz_result/student-quiz-result.mo
 export class QuizController {
   constructor(private readonly quizService: QuizService) {}
 
+  validateQuizData(data, isEdit = false) {
+    const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = data;
+
+    // Check startDate < current date
+    if (!isEdit && new Date(startDate) < new Date()) {
+      throw new Error('Start date must be greater than current date');
+    }
+    if (new Date(startDate) >= new Date(endDate)) {
+      throw new Error('End date must be greater than start date');
+    }
+    if (timeLimitMinutes <= 0) {
+      throw new Error('Time limit must be a positive number greater than zero.');
+    }
+    if (score !== 10 && score !== 100) {
+      throw new Error('Score should be 10 or 100');
+    }
+    if (isLimitedAttempts && (maxAttempts < 1 || maxAttempts > 100)) {
+      throw new Error('Max attempts must be between 1 and 100');
+    }
+    return true;
+  }
+
   async createQuiz(req: Request, res: Response) {
     try {
-      const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
-      //check startDate < current date
-      if (new Date(startDate) < new Date()) {
-        throw new Error('Start date must be greater than current date');
-      }
-      if (startDate >= endDate) {
-        throw new Error('End date must be greater than start date');
-      }
-      if (timeLimitMinutes < 0) {
-        throw new Error('Invalid time limit');
-      }
-      if (score !== 10 && score !== 100) {
-        throw new Error('Score should be 10 or 100');
-      }
-
-      if (isLimitedAttempts && maxAttempts < 1) {
-        throw new Error('Max attempts must be greater than 0');
-      }
-
+      this.validateQuizData(req.body);
       const newQuiz = await this.quizService.createQuiz(req.body);
       return res.status(201).send({ data: newQuiz, status: StatusCodes.CREATED });
     } catch (error) {
@@ -95,24 +99,7 @@ export class QuizController {
   async updateQuiz(req: Request, res: Response) {
     try {
       const id = req.params.id;
-      const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = req.body;
-      if (new Date(startDate) < new Date()) {
-        throw new Error('Start date must be greater than current date');
-      }
-      if (startDate >= endDate) {
-        throw new Error('End date must be greater than start date');
-      }
-      if (timeLimitMinutes < 0) {
-        throw new Error('Invalid time limit');
-      }
-      if (score !== 10 && score !== 100) {
-        throw new Error('Score should be 10 or 100');
-      }
-
-      if (isLimitedAttempts && maxAttempts < 1) {
-        throw new Error('Max attempts must be greater than 0');
-      }
-
+      this.validateQuizData(req.body);
       const updatedQuiz = await this.quizService.updateQuiz(id, req.body);
       return res.status(201).send({ data: updatedQuiz, status: StatusCodes.OK });
     } catch (error) {
