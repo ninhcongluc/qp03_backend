@@ -377,8 +377,9 @@ export class QuizService {
     return await this.studentQuizResultRepository.save(prepareData);
   }
 
-  async listStudentQuizResult(quizId: string) {
+  async listStudentQuizResult(quizId: string, studentId: string) {
     try {
+      console.log('studentId', studentId);
       const quiz = await this.quizRepository.findOne({
         where: { id: quizId },
         relations: ['questions']
@@ -389,11 +390,16 @@ export class QuizService {
         .createQueryBuilder('quiz')
         .leftJoinAndSelect('quiz.studentQuizResults', 'studentQuizResults')
         .where('quiz.id = :quizId', { quizId })
+
         .orderBy('studentQuizResults.submitTime', 'ASC')
         .getOne();
+      console.log('result', result);
+
+      const studentQuizResultByStudent = result.studentQuizResults.filter(rs => rs.studentId === studentId);
 
       return {
         ...result,
+        studentQuizResults: studentQuizResultByStudent,
         numberOfQuestions
       };
     } catch (error) {

@@ -148,8 +148,9 @@ export class QuizController {
 
   async listStudentQuizResult(req, res) {
     try {
+      const studentId = req.user._id;
       const quizId = req.params.id;
-      const result = await this.quizService.listStudentQuizResult(quizId);
+      const result = await this.quizService.listStudentQuizResult(quizId, studentId);
       return res.status(200).send({ data: result, status: StatusCodes.OK });
     } catch (error) {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
