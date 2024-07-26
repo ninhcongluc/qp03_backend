@@ -215,6 +215,16 @@ export class UserService {
         throw new Error('User not found');
       }
 
+      const managerIsUsed = await this.dataSource
+        .getRepository('course')
+        .createQueryBuilder('course')
+        .where('course.managerId = :id', { id })
+        .getOne();
+
+      if (managerIsUsed) {
+        throw new Error('Manager is used in course');
+      }
+
       await this.userRepository.delete({ id });
     } catch (error) {
       throw new Error(error);
