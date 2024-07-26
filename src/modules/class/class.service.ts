@@ -15,19 +15,19 @@ export class ClassService {
     }
   }
 
-    async listClass(courseId: String) {
-        try {
-            return await this.dataSource
-            .getRepository('class')
-            .createQueryBuilder('class')
-            .leftJoinAndSelect('class.teacher', 'user')
-            .where('class.courseId = :courseId', { courseId })
-            .orderBy('class.name', 'ASC')
-            .getMany();
-        } catch (error) {
-        throw new Error(error);
-        }
+  async listClass(courseId: String) {
+    try {
+      return await this.dataSource
+        .getRepository('class')
+        .createQueryBuilder('class')
+        .leftJoinAndSelect('class.teacher', 'user')
+        .where('class.courseId = :courseId', { courseId })
+        .orderBy('class.name', 'ASC')
+        .getMany();
+    } catch (error) {
+      throw new Error(error);
     }
+  }
 
   async createClass(data: Class) {
     try {
@@ -38,26 +38,30 @@ export class ClassService {
         throw new Error('Code class must be 6 characters');
       }
 
-      const classExist = await this.classRepository.findOne({ where: { code: data.code } });
+      const classExist = await this.classRepository.findOne({
+        where: {
+          code: data.code,
+          courseId: data.courseId
+        }
+      });
       if (classExist) {
-        throw new Error('Class is existed in system');
+        throw new Error(`Class ${classExist.code} is existed in system`);
       }
 
       const timeClass = endDate.getTime() - startDate.getTime();
-      const minDuration = 40 * 24 * 60 * 60 * 1000;
+      const minDuration = 35 * 24 * 60 * 60 * 1000;
       if (timeClass < minDuration) {
-        throw new Error('Class must last at least 40 days');
+        throw new Error('Class must last at least 35 days');
       }
+
       const course = await this.dataSource.getRepository('Course').findOne({ where: { id: data.courseId } });
-      const semester = await this.dataSource.getRepository('Semester').findOne({ where: { id: course.semesterId }});
+      const semester = await this.dataSource.getRepository('Semester').findOne({ where: { id: course.semesterId } });
       if (semester.startDate > startDate || semester.endDate < endDate) {
         throw new Error('Class must be in semester');
       }
-      if(semester.startDate < new Date()){
+
+      if (semester.startDate < new Date()) {
         throw new Error('Semester started, can not create class in this semester');
-      }
-      if (await this.checkTimeClass(startDate, endDate, data.courseId)) {
-        throw new Error(`Class is overlapping with another class ${data.courseId}`);
       }
 
       const newClass = this.classRepository.create({
@@ -73,22 +77,33 @@ export class ClassService {
 
   async updateClass(classId: String, data: Class) {
     try {
-      const startDate = new Date(data.startDate);
-      const endDate = new Date(data.endDate);
+      // check khong trung mã code của lớp học trong 1 cousre
+      const classExist = await this.classRepository.findOne({
+        where: {
+          code: data.code,
+          courseId: data.courseId
+        }
+      });
 
-      const timeClass = endDate.getTime() - startDate.getTime();
-      const minDuration = 40 * 24 * 60 * 60 * 1000;
-      if (timeClass < minDuration) {
-        throw new Error('Class must last at least 40 days');
+      if (classExist && classExist.id !== classId) {
+        throw new Error(`Class ${data.code} is existed in system`);
       }
 
-      // if(!await this.checkTimeClass(startDate, endDate, data.courseId)){
-      //     throw new Error(`Class is overlapping with another class ${data.startDate} - ${data.endDate} in course ${data.courseId}`);
-      // }
-
+      const startDate = new Date(data.startDate);
+      const endDate = new Date(data.endDate);
+      const timeClass = endDate.getTime() - startDate.getTime();
+      const minDuration = 35 * 24 * 60 * 60 * 1000;
+      if (timeClass < minDuration) {
+        throw new Error('Class must last at least 35 days');
+      }
+      const course = await this.dataSource.getRepository('Course').findOne({ where: { id: data.courseId } });
+      const semester = await this.dataSource.getRepository('Semester').findOne({ where: { id: course.semesterId } });
+      if (semester.startDate > data.startDate || semester.endDate < data.endDate) {
+          console.log(semester.startDate, data.startDate, semester.endDate, data.endDate);
+        throw new Error('Class must be in semester');
+      }
       if (
-        ((await this.checkClassIsUsed(classId)) || (await this.checkClassHaveQuiz(classId))) &&
-        data.isActive === false
+        (await this.checkClassIsUsed(classId)) || (await this.checkClassHaveQuiz(classId))
       ) {
         throw new Error('Class is used in system');
       }
@@ -123,19 +138,7 @@ export class ClassService {
     }
   }
 
-  async checkTimeClass(startDate: Date, endDate: Date, courseId: String) {
-    const overlappingClasses = await this.classRepository
-      .createQueryBuilder('class')
-      .leftJoinAndSelect('class.course', 'course')
-      .leftJoinAndSelect('course.semester', 'semester')
-      .where('course.id = :courseId', { courseId })
-      .andWhere('semester.startDate <= :startDate AND semester.endDate >= :endDate', {
-        startDate,
-        endDate
-      })
-      .getOne();
-    return overlappingClasses ? true : false;
-  }
+
 
   async checkClassIsUsed(classId: String) {
     const classIsUsed = await this.dataSource

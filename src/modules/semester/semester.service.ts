@@ -24,6 +24,12 @@ export class SemesterService {
       if (startDate > endDate) {
         throw new Error('Start date must be less than end date');
       }
+
+      // 1 semester có ít là 70 ngày
+      const minDuration = 70 * 24 * 60 * 60 * 1000;
+      if (endDate.getTime() - startDate.getTime() < minDuration) {
+        throw new Error('Semester must last at least 70 days');
+      }
       // Kiểm tra xem có semester nào có thời gian chồng chéo không
       const overlappingSemesters = await this.semesterRepository
         .createQueryBuilder('semester')
@@ -81,8 +87,10 @@ export class SemesterService {
       if (!semester) {
         throw new Error('Semester is not exist');
       }
-      if (semester.isActive) {
-        throw new Error('Semester is active');
+
+      const isSemesterUsed = await this.checkSemesterIsUsed(semesterId);
+      if (isSemesterUsed) {
+        throw new Error('Semester is used in course');
       }
 
       return await this.semesterRepository.delete(semesterId);
@@ -104,7 +112,7 @@ export class SemesterService {
       }
 
       const isSemesterUsed = await this.checkSemesterIsUsed(semesterId);
-      if (isSemesterUsed && data.isActive === false) {
+      if (isSemesterUsed) {
         throw new Error('Semester is used in course');
       }
 
