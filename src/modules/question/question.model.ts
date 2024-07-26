@@ -24,6 +24,9 @@ export class Question {
   @Column({ nullable: true })
   file?: string;
 
+  @Column({ type: 'integer', default: 0 })
+  order: number;
+
   @Column({ type: 'timestamp', default: new Date() })
   createdAt: Date;
 

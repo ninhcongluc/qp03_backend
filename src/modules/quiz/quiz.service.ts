@@ -197,7 +197,8 @@ export class QuizService {
         .leftJoinAndSelect('quiz.questions', 'question')
         .leftJoinAndSelect('question.answerOptions', 'answerOptions')
         .where('quiz.id = :quizId', { quizId })
-        .orderBy('question.createdAt', 'ASC')
+        .orderBy('question.order', 'ASC')
+        .addOrderBy('question.createdAt', 'ASC')
         .getOne();
     } catch (error) {
       return error;
@@ -212,6 +213,29 @@ export class QuizService {
       if (!quiz) {
         throw new Error('Quiz not found');
       }
+
+      // Validate common
+      if (incomingQuestions.length <= 0) {
+        throw new Error('Quiz must have at least one question');
+      }
+
+      for (const question of incomingQuestions) {
+        if (!question.text) {
+          throw new Error('Question is required');
+        }
+        if (question.answerOptions.length <= 1) {
+          throw new Error('Question must have at least 2 answer options');
+        }
+        //validate duplicate answer text per question
+        const answerTexts = new Set();
+        for (const answer of question.answerOptions) {
+          if (answerTexts.has(answer.optionText)) {
+            throw new Error(`Duplicate answer option "${answer.optionText}" found for question: ${question.text}`);
+          }
+          answerTexts.add(answer.optionText);
+        }
+      }
+
       if (incomingQuestions.length > 0 && isSubmit) {
         await this.validateQAScore(quiz, incomingQuestions);
       }
@@ -231,6 +255,7 @@ export class QuizService {
         delete question.id;
         const createdQuestion = await this.questionRepository.save({
           ...question,
+          order: question.id,
           score: Number(question.score),
           quizId
         });
@@ -284,6 +309,10 @@ export class QuizService {
   }
 
   async validateQAScore(quiz, questions) {
+    console.log('122', questions);
+    if (questions.length <= 0) {
+      throw new Error('Quiz must have at least one question');
+    }
     const quizScore = Number(quiz.score);
     let totalQuestionScore = 0;
     for (let i = 0; i < questions.length; i++) {
