@@ -20,11 +20,16 @@ export class UserService {
 
   async createManagerAccount(data) {
     try {
-      const email = data.email;
+      const { email, code } = data;
       const userExisted = await this.userRepository.findOne({ where: { email } });
       console.log('userExisted', userExisted);
       if (userExisted) {
         throw new Error('Email already exists');
+      }
+
+      const codeExisted = await this.userRepository.findOne({ where: { code } });
+      if (codeExisted) {
+        throw new Error('Code already exists');
       }
       const generatedPassword = this.generateRandomPassword();
       const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
