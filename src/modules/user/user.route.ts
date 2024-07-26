@@ -122,7 +122,7 @@ userRouter.post('/teacher/export-students/:classId', async (req, res) => {
   return userController.exportStudents(req, res);
 });
 userRouter.post('/teacher/import-student/:classId', upload.single('file'), (req: Request, res: Response) => {
-  return userController.importTeacher(req, res);
+  return userController.importStudent(req, res);
 });
 
 userRouter.post('/manager/import-teacher', upload.single('file'), (req: Request, res: Response) => {

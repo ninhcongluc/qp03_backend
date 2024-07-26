@@ -543,8 +543,11 @@ export class UserService {
   }
 
   validateDataExcel(data) {
-    const requiredColumns = ['Code', 'Email', 'FirstName', 'LastName', 'Phone', 'DOB'];
+    // const requiredColumns = ['Code', 'Email', 'FirstName', 'LastName', 'Phone', 'DOB'];
+    const requiredColumns = ['Code', 'Email'];
+
     const header = Object.keys(data[0]);
+    console.log('header', header);
 
     // Validate header
     for (const column of requiredColumns) {

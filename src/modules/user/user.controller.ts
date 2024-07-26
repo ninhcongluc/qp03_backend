@@ -172,8 +172,8 @@ export class UserController {
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const data = xlsx.utils.sheet_to_json(sheet);
-      await fs.promises.unlink(filePath).catch(console.error);
       await this.userService.importStudent(data, classId);
+      await fs.promises.unlink(filePath).catch(console.error);
 
       res.status(200).send({ message: 'Import data successfully' });
     } catch (error) {
@@ -194,7 +194,7 @@ export class UserController {
       await fs.promises.unlink(filePath).catch(console.error);
       await this.userService.importTeacher(data);
 
-      res.status(200).send({ message: 'Import data successfully' });
+      res.status(201).send({ message: 'Import data successfully' });
     } catch (error) {
       res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
