@@ -441,10 +441,15 @@ export class UserService {
       if (!user) {
         throw new Error('User not found');
       }
-      if (data.isActive === false) {
-        if (await this.checkUserIsUsed(id)) {
-          throw new Error('Teacher account is used in class');
-        }
+      // check k có hai teacher cùng mã code và email
+      const userCodeOrEmailExists = await this.userRepository.findOne({
+        where: [{ code: data.code }, { email: data.email }]
+      });
+        if (userCodeOrEmailExists && userCodeOrEmailExists.id !== id) {
+        throw new Error('Code or email already exists');
+      }
+      if (await this.checkUserIsUsed(id) && data.isActive === false) {
+        throw new Error('Teacher account is used in class');
       }
 
       return await this.userRepository.update({ id }, data);

@@ -149,23 +149,26 @@ export class CourseService {
   async updateCourse(courseId: string, data) {
     try {
       const course = await this.courseRepository.findOne({ where: { id: courseId } });
-      if (!course) {
-        throw new Error('Course not found');
+      //check khong trung mã code của môn học trong cùng 1 semester
+      const course1= await this.courseRepository.findOne({
+        where: {
+          code: data.code,
+          semesterId: data.semesterId
+        }
+      });
+      if (course1 && course1.id !== courseId) {
+        throw new Error(`Course ${data.code} is existed in system`);
       }
 
       const isSemesterUsed = await this.checkSemesterIsUsed(courseId);
-      if (isSemesterUsed && data.isActive === false) {
-        throw new Error('Course is used in class');
+      if (isSemesterUsed) {
+        throw new Error('There are classes in this course');
       }
-
-      // if(course.isActive){
-      //   throw new Error('Course is active');
-      // }
 
       if (!(await this.checkSemesterStart(data.semesterId))) {
         throw new Error('Semester ended, can not create course in this semester');
       }
-
+      
       return await this.courseRepository.save({ ...course, ...data });
     } catch (error) {
       throw new Error(error);
