@@ -59,13 +59,6 @@ export class ClassService {
       if (semester.startDate > startDate || semester.endDate < endDate) {
         throw new Error('Class must be in semester');
       }
-<<<<<<< HEAD
-
-      if (semester.startDate < new Date()) {
-        throw new Error('Semester started, can not create class in this semester');
-      }
-=======
->>>>>>> 67be7e1 (fix data)
 
       const newClass = this.classRepository.create({
         ...data,
@@ -102,12 +95,10 @@ export class ClassService {
       const course = await this.dataSource.getRepository('Course').findOne({ where: { id: data.courseId } });
       const semester = await this.dataSource.getRepository('Semester').findOne({ where: { id: course.semesterId } });
       if (semester.startDate > data.startDate || semester.endDate < data.endDate) {
-          console.log(semester.startDate, data.startDate, semester.endDate, data.endDate);
+        console.log(semester.startDate, data.startDate, semester.endDate, data.endDate);
         throw new Error('Class must be in semester');
       }
-      if (
-        (await this.checkClassIsUsed(classId)) || (await this.checkClassHaveQuiz(classId))
-      ) {
+      if ((await this.checkClassIsUsed(classId)) || (await this.checkClassHaveQuiz(classId))) {
         throw new Error('Class is used in system');
       }
       return await this.classRepository.update({ id: String(classId) }, data);
@@ -140,8 +131,6 @@ export class ClassService {
       throw new Error(error);
     }
   }
-
-
 
   async checkClassIsUsed(classId: String) {
     const classIsUsed = await this.dataSource
