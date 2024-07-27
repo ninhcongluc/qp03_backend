@@ -214,29 +214,7 @@ export class QuizService {
         throw new Error('Quiz not found');
       }
 
-      // Validate common
-      if (incomingQuestions.length <= 0) {
-        throw new Error('Quiz must have at least one question');
-      }
-
-      for (const question of incomingQuestions) {
-        if (!question.text) {
-          throw new Error('Question is required');
-        }
-        if (question.answerOptions.length <= 1) {
-          throw new Error('Question must have at least 2 answer options');
-        }
-        //validate duplicate answer text per question
-        const answerTexts = new Set();
-        for (const answer of question.answerOptions) {
-          if (answerTexts.has(answer.optionText)) {
-            throw new Error(`Duplicate answer option "${answer.optionText}" found for question: ${question.text}`);
-          }
-          answerTexts.add(answer.optionText);
-        }
-      }
-
-      if (incomingQuestions.length > 0 && isSubmit) {
+      if (isSubmit) {
         await this.validateQAScore(quiz, incomingQuestions);
       }
       const existingQuestions = (await this.listQuestionAnswers(quizId)).questions;
@@ -313,6 +291,25 @@ export class QuizService {
     if (questions.length <= 0) {
       throw new Error('Quiz must have at least one question');
     }
+    // Validate common
+
+    for (const question of questions) {
+      if (!question.text) {
+        throw new Error('Question is required');
+      }
+      if (question.answerOptions.length <= 1) {
+        throw new Error('Question must have at least 2 answer options');
+      }
+      //validate duplicate answer text per question
+      const answerTexts = new Set();
+      for (const answer of question.answerOptions) {
+        if (answerTexts.has(answer.optionText)) {
+          throw new Error(`Duplicate answer option "${answer.optionText}" found for question: ${question.text}`);
+        }
+        answerTexts.add(answer.optionText);
+      }
+    }
+
     const quizScore = Number(quiz.score);
     let totalQuestionScore = 0;
     for (let i = 0; i < questions.length; i++) {

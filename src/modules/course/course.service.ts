@@ -14,10 +14,10 @@ export class CourseService {
       if (!(data.code.length >= 6 && data.code.length <= 8)) {
         throw new Error('Code must be 6 - 8 characters.');
       }
-      if(!(data.name.length >= 10 && data.name.length <= 50)){
+      if (!(data.name.length >= 10 && data.name.length <= 50)) {
         throw new Error('Name must be 10 - 50 characters.');
       }
-      if(!(data.description.length >= 1 && data.description.length <= 80)){
+      if (!(data.description.length >= 1 && data.description.length <= 80)) {
         throw new Error('Description must be 1 - 80 characters.');
       }
       // validate khong duoc tao trung course trong 1 ky
@@ -150,7 +150,7 @@ export class CourseService {
     try {
       const course = await this.courseRepository.findOne({ where: { id: courseId } });
       //check khong trung mã code của môn học trong cùng 1 semester
-      const course1= await this.courseRepository.findOne({
+      const course1 = await this.courseRepository.findOne({
         where: {
           code: data.code,
           semesterId: data.semesterId
@@ -165,10 +165,10 @@ export class CourseService {
         throw new Error('There are classes in this course');
       }
 
-      if (!(await this.checkSemesterStart(data.semesterId))) {
-        throw new Error('Semester ended, can not create course in this semester');
-      }
-      
+      // if(course.isActive){
+      //   throw new Error('Course is active');
+      // }
+
       return await this.courseRepository.save({ ...course, ...data });
     } catch (error) {
       throw new Error(error);

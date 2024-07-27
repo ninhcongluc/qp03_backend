@@ -59,10 +59,13 @@ export class ClassService {
       if (semester.startDate > startDate || semester.endDate < endDate) {
         throw new Error('Class must be in semester');
       }
+<<<<<<< HEAD
 
       if (semester.startDate < new Date()) {
         throw new Error('Semester started, can not create class in this semester');
       }
+=======
+>>>>>>> 67be7e1 (fix data)
 
       const newClass = this.classRepository.create({
         ...data,

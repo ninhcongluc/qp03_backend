@@ -23,7 +23,7 @@ userRouter.post(
   }
 );
 
-userRouter.put('/user/change-password', (req: Request, res: Response) => {
+userRouter.put('/user/change-password', schemaValidator('/user/change-password'), (req: Request, res: Response) => {
   return userController.changePassword(req, res);
 });
 

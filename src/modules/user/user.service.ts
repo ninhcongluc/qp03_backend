@@ -58,7 +58,7 @@ export class UserService {
           </div>
         `
       };
-      await emailService.sendEmail(mailOptions);
+      emailService.sendEmail(mailOptions);
       console.log('Welcome email sent to', email);
 
       return await this.userRepository.save(newUser);
@@ -138,8 +138,8 @@ export class UserService {
 
   async changePassword(data) {
     try {
-      const { email, oldPassword, newPassword, confirmPassword } = data;
-      const user = await this.userRepository.findOne({ where: { email } });
+      const { userId, oldPassword, newPassword, confirmPassword } = data;
+      const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         throw new Error('User not found');
       }
@@ -148,15 +148,17 @@ export class UserService {
       if (!isMatch) {
         throw new Error('Old password is incorrect');
       }
+      if (oldPassword === newPassword) {
+        throw new Error('New password must be different from old password');
+      }
 
-      // check mat khau moi va mat khau xac nhan co giong nhau khong
       if (newPassword !== confirmPassword) {
         throw new Error('New password and confirm password do not match');
       }
-      // ma hoa mat khau moi
       const salt = bcrypt.genSaltSync(+process.env.SALT_ROUNDS);
+      console.log('newPassword', newPassword);
       const hashPassword = bcrypt.hashSync(newPassword, salt);
-      return await this.userRepository.update({ email }, { password: hashPassword });
+      return await this.userRepository.update({ id: userId }, { password: hashPassword });
     } catch (error) {
       throw new Error(error);
     }

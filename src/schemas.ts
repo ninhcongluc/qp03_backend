@@ -106,6 +106,13 @@ const updateClass = Joi.object().keys({
   isActive: Joi.boolean().optional()
 });
 
+const changePassword = Joi.object().keys({
+  oldPassword: Joi.string().required(),
+  newPassword: Joi.string().required(),
+  confirmPassword: Joi.string().required(),
+  userId: Joi.string().required()
+});
+
 export default {
   '/auth/signIn': authSignIn,
   '/auth/signUp': authSignUp,
@@ -117,5 +124,6 @@ export default {
   '/quiz/update': updateQuiz,
   '/course/update': updateCourse,
   '/class/create': createClass,
-  '/class/update': updateClass
+  '/class/update': updateClass,
+  '/user/change-password': changePassword
 } as { [key: string]: ObjectSchema };

@@ -29,6 +29,7 @@ router.get('/google/callback', function (req, res, next) {
     const avatar = user?.photos[0]?.value;
 
     const userFound = await authService.findByConditions({ email });
+    console.log('userFound', userFound);
     if (userFound) {
       switch (userFound.roleId) {
         case 3:
