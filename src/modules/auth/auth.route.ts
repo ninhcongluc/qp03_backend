@@ -19,33 +19,34 @@ router.post('/register-account', (req: Request, res: Response) => {
   return authController.signUpAccount(req, res);
 });
 
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.post('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/google/callback', function (req, res, next) {
   passport.authenticate('google', async function (err, user, info) {
-    console.log('user', user);
-    const displayName = user?.displayName;
-    const email = user?.emails[0].value;
-    const avatar = user?.photos[0]?.value;
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.redirect('/login');
+    }
 
-    const userFound = await authService.findByConditions({ email });
-    console.log('userFound', userFound);
-    if (userFound) {
-      switch (userFound.roleId) {
-        case 3:
-          res.redirect(`${process.env.CLIENT_URL}teacher/course-management`);
-          break;
-        case 4:
-          res.redirect(`${process.env.CLIENT_URL}student/course-management`);
-          break;
-        default:
-          res.redirect(`${process.env.CLIENT_URL}`);
-          break;
+    const { displayName, emails, photos } = user;
+    const email = emails[0].value;
+    const avatar = photos[0].value;
+
+    try {
+      const userFound = await authService.findByConditions({ email });
+      if (userFound) {
+        // Existing user, handle login
+        // ...
+      } else {
       }
+      res.redirect('/dashboard');
+    } catch (error) {
+      return next(error);
     }
   })(req, res, next);
 });
-
 router.get('/logout', (req, res) => {
   res.redirect(process.env.CLIENT_URL);
 });
