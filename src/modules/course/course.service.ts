@@ -52,6 +52,7 @@ export class CourseService {
       const queryBuilder = this.courseRepository
         .createQueryBuilder('course')
         .leftJoin('course.classes', 'class')
+        .leftJoinAndSelect('course.manager', 'manager')
         .leftJoinAndSelect('course.semester', 'semester')
         .where('1=1');
       if (query.teacherId) {
