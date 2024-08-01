@@ -50,6 +50,10 @@ classRouter.get('/view-class-detail/:id', authentication, authorization(['manage
   return classController.viewClassDetails(req, res);
 });
 
+classRouter.get('/class/list-by-student', authentication, (req: Request, res: Response) => {
+  return classController.listClassByStudentId(req, res);
+});
+
 classRouter.get('/class/list-by-teacher/:teacherId', authentication, (req: Request, res: Response) => {
   return classController.listClassByTeacherId(req, res);
 });

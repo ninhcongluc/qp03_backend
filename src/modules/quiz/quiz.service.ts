@@ -1,5 +1,5 @@
 import { DataSource, In, Not, Repository } from 'typeorm';
-import { Quiz, QuizStatus } from './quiz.model';
+import { Quiz, QuizStatus, QuizType } from './quiz.model';
 import { Class } from '../class/class.model';
 import { AppObject } from '../../commons/consts/app.objects';
 import { Question } from '../question/question.model';
@@ -667,4 +667,49 @@ export class QuizService {
       throw error;
     }
   }
+
+
+  async getQuizByExamType(teacherId: string) {
+    console.log('teacherId', teacherId);
+    const rs = await this.quizRepository
+      .createQueryBuilder('quiz')
+      .leftJoin('quiz.class', 'class')
+      .where('quiz.type = :type', { type: QuizType.EXAM })
+      // .andWhere('quiz.status = :status', { status: QuizStatus.SUBMITTED })
+      .andWhere('class.teacherId = :teacherId', { teacherId })
+      .getMany();
+    return rs;
+  }
+
+  async updateQuizSchedular(quizId: string, startDate, endDate) {
+    return await this.quizRepository.update({ id: quizId }, { startDate, endDate });
+  }
+
+  async getSchedularExamStudent(userId: string) {
+    const rs = await this.quizRepository
+      .createQueryBuilder('quiz')
+      .leftJoinAndSelect('quiz.class', 'class')
+      .leftJoin('class.classParticipants', 'classParticipants')
+      .leftJoinAndSelect('class.course', 'course')
+      .where('quiz.type = :type', { type: QuizType.EXAM })
+      .andWhere('classParticipants.userId = :userId', { userId })
+      .getMany();
+
+    const mapData = rs.map(item => {
+      return {
+        id: item.id,
+        name: item.name,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        course: {
+          id: item.class.course.id,
+          code: item.class.course.code,
+          name: item.class.course.name
+        }
+      };
+    });
+
+    return mapData;
+  }
+
 }

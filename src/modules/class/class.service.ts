@@ -162,4 +162,18 @@ export class ClassService {
       throw new Error(error);
     }
   }
+
+  async listClassByStudent(userId: String) {
+    try {
+      return await this.dataSource
+        .getRepository('class')
+        .createQueryBuilder('class')
+        .leftJoin('class.classParticipants', 'classParticipants')
+        .leftJoinAndSelect('class.course', 'course')
+        .where('classParticipants.userId = :userId AND class.isActive = true', { userId })
+        .getMany();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }

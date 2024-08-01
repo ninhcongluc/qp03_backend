@@ -8,6 +8,11 @@ export enum QuizStatus {
   SUBMITTED = 'submitted'
 }
 
+export enum QuizType {
+  PRACTICE = 'practice',
+  EXAM = 'exam'
+}
+
 @Entity('quiz')
 export class Quiz {
   @PrimaryGeneratedColumn('uuid')
@@ -24,6 +29,9 @@ export class Quiz {
 
   @Column({ type: 'enum', enum: QuizStatus, default: QuizStatus.DRAFT })
   status: QuizStatus;
+
+  @Column({ type: 'enum', enum: QuizType, default: QuizType.PRACTICE })
+  type: QuizType;
 
   @Column({ type: 'timestamp', nullable: false })
   startDate: Date;

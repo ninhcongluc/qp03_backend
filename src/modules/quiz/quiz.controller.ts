@@ -231,4 +231,47 @@ export class QuizController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+  async getQuizByExamType(req, res) {
+    try {
+      const teacherId = req.user._id;
+      const result = await this.quizService.getQuizByExamType(teacherId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async updateQuizSchedular(req, res) {
+    try {
+      const quizId = req.params.id;
+      const { startDate, endDate } = req.body;
+      if (!startDate || !endDate) {
+        throw new Error('Start date and end date are required');
+      }
+      //endDate phai lon hon startDate
+      if (new Date(startDate) >= new Date(endDate)) {
+        throw new Error('End date must be greater than start date');
+      }
+      // startDate endDate phai trong cung 1 ngay
+      if (new Date(startDate).getDate() !== new Date(endDate).getDate()) {
+        throw new Error('Start date and end date must be in the same day');
+      }
+
+      const result = await this.quizService.updateQuizSchedular(quizId, startDate, endDate);
+
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
+  async getSchedularExamStudent(req, res) {
+    try {
+      const userId = req.user._id;
+      const result = await this.quizService.getSchedularExamStudent(userId);
+      return res.status(200).send({ data: result, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
 }

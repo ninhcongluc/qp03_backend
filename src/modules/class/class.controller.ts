@@ -74,4 +74,14 @@ export class ClassController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+  async listClassByStudentId(req, res) {
+    const studentId = req.user._id;
+    try {
+      const classes = await this.classService.listClassByStudent(studentId);
+      return res.status(200).send({ data: classes, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
 }

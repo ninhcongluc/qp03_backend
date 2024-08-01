@@ -135,4 +135,21 @@ quizRouter.get('/quiz/:id/check-quiz', authentication, (req: Request, res: Respo
   return quizController.checkQuizIsTaken(req, res);
 });
 
+quizRouter.get('/quiz/schedular/exam', authentication, authorization(['teacher']), (req: Request, res: Response) => {
+  return quizController.getQuizByExamType(req, res);
+});
+
+quizRouter.put('/quiz/:id/schedular', authentication, authorization(['teacher']), (req: Request, res: Response) => {
+  return quizController.updateQuizSchedular(req, res);
+});
+
+quizRouter.get(
+  '/quiz/student-exam/schedular',
+  authentication,
+  authorization(['student']),
+  (req: Request, res: Response) => {
+    return quizController.getSchedularExamStudent(req, res);
+  }
+);
+
 export default quizRouter;
