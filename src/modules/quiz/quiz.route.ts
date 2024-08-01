@@ -135,4 +135,8 @@ quizRouter.get('/quiz/:id/check-quiz', authentication, (req: Request, res: Respo
   return quizController.checkQuizIsTaken(req, res);
 });
 
+quizRouter.get('/quiz/review-detail/:id', (req: Request, res: Response) => {
+  return quizController.quizReviewDetail(req, res);
+});
+
 export default quizRouter;

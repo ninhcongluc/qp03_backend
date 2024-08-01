@@ -31,8 +31,32 @@ export class CourseService {
       if (course) {
         throw new Error('You can not create duplicate course in a semester');
       }
-      if (!(await this.checkSemesterStart(data.semesterId))) {
-        throw new Error('Semester started, can not create course in this semester');
+
+      // check end date of semester vs current date có cách nhau 35 ngày không
+      const semester = await this.dataSource
+        .getRepository('semester')
+        .createQueryBuilder('semester')
+        .where('semester.id = :semesterId', { semesterId: data.semesterId })
+        .getOne();
+      // semster có active = true
+      console.log('semester', semester.isActive);
+      if (!semester.isActive) {
+        throw new Error('Semester is not active');
+      }
+
+      if (semester) {
+        const currentDate = new Date();
+        const endDate = new Date(semester.endDate);
+        const diffTime = endDate.getTime() - currentDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        console.log('diffDays', diffDays);
+        if (diffDays < 0) {
+          throw new Error('You can not create course in a semester that has ended');
+        }
+
+        if (diffDays < 35) {
+          throw new Error('You can not create course in a semester that end less than 35 days');
+        }
       }
 
       const newCourse = this.courseRepository.create({
@@ -157,18 +181,42 @@ export class CourseService {
           semesterId: data.semesterId
         }
       });
+
       if (course1 && course1.id !== courseId) {
         throw new Error(`Course ${data.code} is existed in system`);
       }
 
       const isSemesterUsed = await this.checkSemesterIsUsed(courseId);
-      if (isSemesterUsed) {
+      if (isSemesterUsed && data.isActive === false) {
         throw new Error('There are classes in this course');
       }
 
-      // if(course.isActive){
-      //   throw new Error('Course is active');
-      // }
+      // check end date of semester vs current date có cách nhau 35 ngày không
+      const semester = await this.dataSource
+        .getRepository('semester')
+        .createQueryBuilder('semester')
+        .where('semester.id = :semesterId', { semesterId: data.semesterId })
+        .getOne();
+
+      if (!semester.isActive) {
+        throw new Error('Semester is not active');
+      }
+
+
+      if (semester) {
+        const currentDate = new Date();
+        const endDate = new Date(semester.endDate);
+        const diffTime = endDate.getTime() - currentDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        console.log('diffDays', diffDays);
+        if (diffDays < 0) {
+          throw new Error('You can not update course in a semester that has ended');
+        }
+
+        if (diffDays < 35) {
+          throw new Error('You can not update course in a semester that end less than 35 days');
+        }
+      }
 
       return await this.courseRepository.save({ ...course, ...data });
     } catch (error) {
@@ -222,9 +270,24 @@ export class CourseService {
       .getRepository('semester')
       .createQueryBuilder('semester')
       .where('semester.id = :semesterId', { semesterId })
-      .andWhere('semester.startDate > :currentDate', { currentDate: new Date() })
+      .andWhere('semester.endDate > :currentDate', { currentDate: new Date() })
       .getOne();
 
     return semester ? true : false;
   }
+
+  async getCoursesList(teacherId: string) {
+    try {
+      const courses = this.courseRepository
+        .createQueryBuilder('course')
+        .leftJoin('course.classes', 'class')
+        .where('class.teacherId = :teacherId', { teacherId })
+        .getMany();
+
+      return courses;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
 }

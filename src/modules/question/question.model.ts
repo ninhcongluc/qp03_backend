@@ -8,8 +8,8 @@ export class Question {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
-  @Column({ type: 'uuid' })
-  quizId: string;
+  @Column({ type: 'uuid', nullable: true })
+  quizId: string | null;
 
   @Column({ nullable: false, type: 'enum', enum: ['select_one', 'multiple_choice'] })
   type: string;
