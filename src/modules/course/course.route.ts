@@ -50,5 +50,8 @@ courseRouter.get('/course-management/:id', (req: Request, res: Response) => {
   return courseController.getDetailCourses(req, res);
 });
 
+courseRouter.get('/course-list/:teacherId', (req: Request, res: Response) => {
+  return courseController.getCoursesList(req, res);
+});
 
 export default courseRouter;

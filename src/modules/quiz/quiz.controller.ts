@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { StudentQuizStatus } from '../student_quiz_result/student-quiz-result.model';
 
 export class QuizController {
-  constructor(private readonly quizService: QuizService) {}
+  constructor(private readonly quizService: QuizService) { }
 
   validateQuizData(data, isEdit = false) {
     const { startDate, endDate, timeLimitMinutes, score, isLimitedAttempts, maxAttempts } = data;
@@ -231,4 +231,15 @@ export class QuizController {
       return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
     }
   }
+
+  async quizReviewDetail(req: Request, res: Response) {
+    try {
+      const quizId = req.params.id;
+      const rs = await this.quizService.getQuizReviewDetail(quizId);
+      return res.status(200).send({ data: rs, status: StatusCodes.OK });
+    } catch (error) {
+      return res.status(400).send({ error: error.message, status: StatusCodes.BAD_REQUEST });
+    }
+  }
+
 }

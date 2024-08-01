@@ -516,9 +516,9 @@ export class QuizService {
       studentQuizHistory.answers = Array.isArray(answers)
         ? answers
         : Object.entries(answers).map(([questionId, answerOptionIds]) => ({
-            questionId,
-            answerOptionIds: Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds]
-          }));
+          questionId,
+          answerOptionIds: Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds]
+        }));
       await this.studentQuizHistoryRepository.save(studentQuizHistory);
     } else {
       await this.studentQuizHistoryRepository.save({
@@ -529,9 +529,9 @@ export class QuizService {
         answers: Array.isArray(answers)
           ? answers
           : Object.entries(answers).map(([questionId, answerOptionIds]) => ({
-              questionId,
-              answerOptionIds: Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds]
-            }))
+            questionId,
+            answerOptionIds: Array.isArray(answerOptionIds) ? answerOptionIds : [answerOptionIds]
+          }))
       });
     }
 
@@ -651,7 +651,41 @@ export class QuizService {
     }
   }
 
+  async getQuizReviewDetail(quizId: string) {
+    const questions = await this.listQuestionAnswers(quizId);
+
+    const studentQuizHistory = await this.studentQuizHistoryRepository.find({
+      where: { quizId }
+    });
+
+    console.log('students', studentQuizHistory);
+    const studentAnswers = studentQuizHistory.map(data => data.answers);
+    const answerCounts = {};
+
+    studentAnswers.forEach(subData => {
+      subData.forEach(item => {
+        item.answerOptionIds.forEach(id => {
+          if (answerCounts[id]) {
+            answerCounts[id]++;
+          } else {
+            answerCounts[id] = 1;
+          }
+        });
+      });
+    });
+
+    console.log(answerCounts);
+    questions.questions.forEach(q => {
+      q.answerOptions.forEach(option => {
+        option.count = answerCounts[option.id] || 0;
+      });
+    });
+
+    return questions;
+  }
+
   async checkQuizIsTaken(quizId: string) {
+    // eslint-disable-next-line no-useless-catch
     try {
       const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
       if (!quiz) {

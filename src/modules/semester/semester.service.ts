@@ -16,7 +16,6 @@ export class SemesterService {
         }
       });
 
-      console.log(semester);
       if (semester) {
         throw new Error('Semester is existed in system');
       }
@@ -106,16 +105,34 @@ export class SemesterService {
           id: semesterId
         }
       });
-      //if currentDate > endDate => can not active semester that is ended
+      // nếu current date  > startDate và < endDate => không thể update semester
+      if (new Date() > semester.startDate && new Date() < semester.endDate && !data.isActive) {
+        throw new Error('You can not update semester in a semester that is running');
+      }
+      // nếu current date > endDate => không thể active semester đã kết thúc
       if (data.isActive && new Date() > semester.endDate) {
         throw new Error('Semester is ended. Can not active');
       }
 
-      const isSemesterUsed = await this.checkSemesterIsUsed(semesterId);
-      if (isSemesterUsed) {
-        throw new Error('Semester is used in course');
+      //không được tạo courser trước 10 ngày tính từ lúc start date của semester
+      const currentDate = new Date();
+      const startDate = new Date(semester.startDate);
+      const diffTimeStart = currentDate.getTime() - startDate.getTime();
+      const diffDaysStart = Math.ceil(diffTimeStart / (1000 * 60 * 60 * 24));
+      console.log('diffDaysStart', diffDaysStart);
+      if (diffDaysStart < -10) {
+        throw new Error('You can not update semester before 10 days from start date');
       }
-
+      // chỉ có thể active 1 semester tại 1 thời điểm
+      if (data.isActive) {
+        await this.semesterRepository
+          .createQueryBuilder('semester')
+          .update()
+          .set({ isActive: false })
+          .where('semester.id != :semesterId', { semesterId })
+          .execute();
+      }
+      
       return await this.semesterRepository.update(semesterId, data);
     } catch (error) {
       throw new Error(error);
